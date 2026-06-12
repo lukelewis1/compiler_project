@@ -1,0 +1,20 @@
+# Build outputs
+lexer
+unit_tests
+tokens.txt
+
+# CMake
+cmake-build-debug/
+cmake-build-release/
+CMakeFiles/
+CMakeCache.txt
+
+# IDE
+.idea/
+*.iml
+
+# macOS
+.DS_Store
+
+# Empty placeholder
+src/

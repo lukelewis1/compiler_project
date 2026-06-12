@@ -1,0 +1,13 @@
+Lexeme: 3abc, Token Type: INVALID, Line: 1, Column: 1
+Lexeme: 4def, Token Type: INVALID, Line: 1, Column: 6
+
+============================= Summary Statistics =============================
+Total Tokens: 2 | Valid: 0 | Invalid: 2
+Keywords: 0
+Identifiers: 0
+Integers: 0
+Operators: 0
+Delimiters: 0
+Lines Scanned: 1
+Longest Token: 4 characters
+==============================================================================

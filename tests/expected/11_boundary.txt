@@ -1,0 +1,13 @@
+[WARN] Token at line 1 col 1 exceeds 255 chars, truncating
+Lexeme: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa, Token Type: IDENTIFIER, Line: 1, Column: 1
+
+============================= Summary Statistics =============================
+Total Tokens: 1 | Valid: 1 | Invalid: 0
+Keywords: 0
+Identifiers: 1
+Integers: 0
+Operators: 0
+Delimiters: 0
+Lines Scanned: 1
+Longest Token: 259 characters
+==============================================================================

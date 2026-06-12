@@ -1,0 +1,14 @@
+Lexeme: @, Token Type: INVALID, Line: 1, Column: 1
+Lexeme: #, Token Type: INVALID, Line: 1, Column: 3
+Lexeme: $, Token Type: INVALID, Line: 1, Column: 5
+
+============================= Summary Statistics =============================
+Total Tokens: 3 | Valid: 0 | Invalid: 3
+Keywords: 0
+Identifiers: 0
+Integers: 0
+Operators: 0
+Delimiters: 0
+Lines Scanned: 1
+Longest Token: 1 characters
+==============================================================================

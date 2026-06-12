@@ -1,0 +1,19 @@
+Lexeme: int, Token Type: KEYWORD, Line: 1, Column: 1
+Lexeme: char, Token Type: KEYWORD, Line: 1, Column: 5
+Lexeme: if, Token Type: KEYWORD, Line: 1, Column: 10
+Lexeme: else, Token Type: KEYWORD, Line: 1, Column: 13
+Lexeme: while, Token Type: KEYWORD, Line: 1, Column: 18
+Lexeme: for, Token Type: KEYWORD, Line: 1, Column: 24
+Lexeme: do, Token Type: KEYWORD, Line: 1, Column: 28
+Lexeme: return, Token Type: KEYWORD, Line: 1, Column: 31
+
+============================= Summary Statistics =============================
+Total Tokens: 8 | Valid: 8 | Invalid: 0
+Keywords: 8
+Identifiers: 0
+Integers: 0
+Operators: 0
+Delimiters: 0
+Lines Scanned: 1
+Longest Token: 6 characters
+==============================================================================

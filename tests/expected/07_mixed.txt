@@ -1,0 +1,20 @@
+Lexeme: int, Token Type: KEYWORD, Line: 1, Column: 1
+Lexeme: main, Token Type: IDENTIFIER, Line: 1, Column: 5
+Lexeme: (, Token Type: DELIMITER, Line: 1, Column: 9
+Lexeme: ), Token Type: DELIMITER, Line: 1, Column: 10
+Lexeme: {, Token Type: DELIMITER, Line: 1, Column: 12
+Lexeme: return, Token Type: KEYWORD, Line: 2, Column: 5
+Lexeme: 0, Token Type: INTEGER, Line: 2, Column: 12
+Lexeme: ;, Token Type: DELIMITER, Line: 2, Column: 13
+Lexeme: }, Token Type: DELIMITER, Line: 3, Column: 1
+
+============================= Summary Statistics =============================
+Total Tokens: 9 | Valid: 9 | Invalid: 0
+Keywords: 2
+Identifiers: 1
+Integers: 1
+Operators: 0
+Delimiters: 5
+Lines Scanned: 3
+Longest Token: 6 characters
+==============================================================================

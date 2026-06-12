@@ -1,0 +1,19 @@
+Lexeme: ;, Token Type: DELIMITER, Line: 1, Column: 1
+Lexeme: ,, Token Type: DELIMITER, Line: 1, Column: 3
+Lexeme: (, Token Type: DELIMITER, Line: 1, Column: 5
+Lexeme: ), Token Type: DELIMITER, Line: 1, Column: 7
+Lexeme: {, Token Type: DELIMITER, Line: 1, Column: 9
+Lexeme: }, Token Type: DELIMITER, Line: 1, Column: 11
+Lexeme: [, Token Type: DELIMITER, Line: 1, Column: 13
+Lexeme: ], Token Type: DELIMITER, Line: 1, Column: 15
+
+============================= Summary Statistics =============================
+Total Tokens: 8 | Valid: 8 | Invalid: 0
+Keywords: 0
+Identifiers: 0
+Integers: 0
+Operators: 0
+Delimiters: 8
+Lines Scanned: 1
+Longest Token: 1 characters
+==============================================================================

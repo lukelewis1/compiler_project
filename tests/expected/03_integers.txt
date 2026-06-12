@@ -1,0 +1,15 @@
+Lexeme: 0, Token Type: INTEGER, Line: 1, Column: 1
+Lexeme: 123, Token Type: INTEGER, Line: 1, Column: 3
+Lexeme: 42, Token Type: INTEGER, Line: 1, Column: 7
+Lexeme: 9999, Token Type: INTEGER, Line: 1, Column: 10
+
+============================= Summary Statistics =============================
+Total Tokens: 4 | Valid: 4 | Invalid: 0
+Keywords: 0
+Identifiers: 0
+Integers: 4
+Operators: 0
+Delimiters: 0
+Lines Scanned: 1
+Longest Token: 4 characters
+==============================================================================

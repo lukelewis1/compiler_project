@@ -1,0 +1,11 @@
+
+============================= Summary Statistics =============================
+Total Tokens: 0 | Valid: 0 | Invalid: 0
+Keywords: 0
+Identifiers: 0
+Integers: 0
+Operators: 0
+Delimiters: 0
+Lines Scanned: 1
+Longest Token: 0 characters
+==============================================================================
