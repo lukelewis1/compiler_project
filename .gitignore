@@ -1,5 +1,7 @@
 # Build outputs
-lexer
+build/
+parser.output
+lexer/lexer
 unit_tests
 tokens.txt
 

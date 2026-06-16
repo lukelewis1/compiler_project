@@ -1,0 +1,725 @@
+/* ── Top Level ── */
+Program -> ClassDeclarationList
+
+ClassDeclarationList -> ClassDeclaration
+                     | ClassDeclaration ClassDeclarationList
+
+/* ── Class Declaration ── */
+ClassDeclaration -> class Identifier { AccessSpecifierSectionList } ;
+
+AccessSpecifierSectionList -> AccessSpecifierSection
+                            | AccessSpecifierSection AccessSpecifierSectionList
+
+AccessSpecifierSection -> AccessSpecifier : MemberList
+
+AccessSpecifier -> public
+                | private
+                | protected
+
+/* ── Members ── */
+MemberList -> MemberDeclaration
+           | MemberDeclaration MemberList
+
+MemberDeclaration -> VariableDeclaration
+                  | FunctionDeclaration
+
+/* ── Variable Declaration ── */
+VariableDeclaration -> Type Identifier ;
+                    | Type Identifier = Expression ;
+
+Type -> int
+     | char
+
+/* ── Function Declaration ── */
+FunctionDeclaration -> Type Identifier ( ParameterList ) { StatementList }
+                    | Type Identifier ( ) { StatementList }
+
+ParameterList -> Parameter
+              | Parameter , ParameterList
+
+Parameter -> Type Identifier
+
+/* ── Statements ── */
+StatementList -> Statement
+              | Statement StatementList
+
+Statement -> VariableDeclaration
+          | AssignmentStatement
+          | IfStatement
+          | WhileStatement
+          | ForStatement
+          | ReturnStatement
+          | NewStatement
+          | DeleteStatement
+          | ExpressionStatement
+
+AssignmentStatement -> Identifier = Expression ;
+
+IfStatement -> if ( Expression ) { StatementList }
+            | if ( Expression ) { StatementList } else { StatementList }
+
+WhileStatement -> while ( Expression ) { StatementList }
+
+ForStatement -> for ( ForInitialiser Expression ; Expression ) { StatementList }
+
+ForInitialiser -> VariableDeclaration
+               | AssignmentStatement
+               | ;
+
+ReturnStatement -> return Expression ;
+                | return ;
+
+ExpressionStatement -> Expression ;
+
+/* ── Object Construction / Destruction ── */
+NewStatement -> Type Identifier = new Identifier ( ArgumentList ) ;
+             | Type Identifier = new Identifier ( ) ;
+
+DeleteStatement -> delete Identifier ;
+
+/* ── Expressions ── */
+Expression -> Expression + Term
+           | Expression - Term
+           | Expression < Term
+           | Expression > Term
+           | Term
+
+Term -> Term * Factor
+     | Term / Factor
+     | Factor
+
+Factor -> Identifier
+       | IntegerLiteral
+       | ( Expression )
+       | Identifier . Identifier
+
+/* ── Arguments ── */
+ArgumentList -> Expression
+             | Expression , ArgumentList
+
+SLR grammar ('' is ε):
+
+
+
+FIRST / FOLLOW table
+Nonterminal	FIRST	FOLLOW
+Program	{class}	{$}
+ClassDeclarationList	{class}	{$}
+ClassDeclaration	{class}	{$,class}
+AccessSpecifierSectionList	{public,private,protected}	{rbrace}
+AccessSpecifierSection	{public,private,protected}	{rbrace,public,private,protected}
+AccessSpecifier	{public,private,protected}	{colon}
+MemberList	{int,char}	{rbrace,public,private,protected}
+MemberDeclaration	{int,char}	{rbrace,public,private,protected,int,char}
+VariableDeclaration	{int,char}	{rbrace,public,private,protected,int,char,id,if,while,for,return,delete,intlit,lparen}
+Type	{int,char}	{id}
+FunctionDeclaration	{int,char}	{rbrace,public,private,protected,int,char}
+ParameterList	{int,char}	{rparen}
+Parameter	{int,char}	{rparen,comma}
+StatementList	{int,char,id,if,while,for,return,delete,intlit,lparen}	{rbrace}
+Statement	{int,char,id,if,while,for,return,delete,intlit,lparen}	{rbrace,int,char,id,if,while,for,return,delete,intlit,lparen}
+AssignmentStatement	{id}	{rbrace,int,char,id,if,while,for,return,delete,intlit,lparen}
+IfStatement	{if}	{rbrace,int,char,id,if,while,for,return,delete,intlit,lparen}
+WhileStatement	{while}	{rbrace,int,char,id,if,while,for,return,delete,intlit,lparen}
+ForStatement	{for}	{rbrace,int,char,id,if,while,for,return,delete,intlit,lparen}
+ForInitialiser	{id,semi,int,char}	{id,intlit,lparen}
+ReturnStatement	{return}	{rbrace,int,char,id,if,while,for,return,delete,intlit,lparen}
+ExpressionStatement	{id,intlit,lparen}	{rbrace,int,char,id,if,while,for,return,delete,intlit,lparen}
+NewStatement	{int,char}	{rbrace,int,char,id,if,while,for,return,delete,intlit,lparen}
+DeleteStatement	{delete}	{rbrace,int,char,id,if,while,for,return,delete,intlit,lparen}
+Expression	{id,intlit,lparen}	{semi,rparen,plus,minus,lessthan,greaterthan,comma}
+Term	{id,intlit,lparen}	{semi,rparen,plus,minus,lessthan,greaterthan,star,slash,comma}
+Factor	{id,intlit,lparen}	{semi,rparen,plus,minus,lessthan,greaterthan,star,slash,comma}
+ArgumentList	{id,intlit,lparen}	{rparen}
+
+
+SLR closure table
+Goto	Kernel	State	Closure
+	{Program -> .ClassDeclarationList}	0	{Program -> .ClassDeclarationList; ClassDeclarationList -> .ClassDeclaration; ClassDeclarationList -> .ClassDeclaration ClassDeclarationList; ClassDeclaration -> .class id lbrace AccessSpecifierSectionList rbrace semi}
+goto(0, ClassDeclarationList)	{Program -> ClassDeclarationList.}	1	{Program -> ClassDeclarationList.}
+goto(0, ClassDeclaration)	{ClassDeclarationList -> ClassDeclaration.; ClassDeclarationList -> ClassDeclaration.ClassDeclarationList}	2	{ClassDeclarationList -> ClassDeclaration.; ClassDeclarationList -> ClassDeclaration.ClassDeclarationList; ClassDeclarationList -> .ClassDeclaration; ClassDeclarationList -> .ClassDeclaration ClassDeclarationList; ClassDeclaration -> .class id lbrace AccessSpecifierSectionList rbrace semi}
+goto(0, class)	{ClassDeclaration -> class.id lbrace AccessSpecifierSectionList rbrace semi}	3	{ClassDeclaration -> class.id lbrace AccessSpecifierSectionList rbrace semi}
+goto(2, ClassDeclarationList)	{ClassDeclarationList -> ClassDeclaration ClassDeclarationList.}	4	{ClassDeclarationList -> ClassDeclaration ClassDeclarationList.}
+goto(2, ClassDeclaration)	{ClassDeclarationList -> ClassDeclaration.; ClassDeclarationList -> ClassDeclaration.ClassDeclarationList}	2	 
+goto(2, class)	{ClassDeclaration -> class.id lbrace AccessSpecifierSectionList rbrace semi}	3	 
+goto(3, id)	{ClassDeclaration -> class id.lbrace AccessSpecifierSectionList rbrace semi}	5	{ClassDeclaration -> class id.lbrace AccessSpecifierSectionList rbrace semi}
+goto(5, lbrace)	{ClassDeclaration -> class id lbrace.AccessSpecifierSectionList rbrace semi}	6	{ClassDeclaration -> class id lbrace.AccessSpecifierSectionList rbrace semi; AccessSpecifierSectionList -> .AccessSpecifierSection; AccessSpecifierSectionList -> .AccessSpecifierSection AccessSpecifierSectionList; AccessSpecifierSection -> .AccessSpecifier colon MemberList; AccessSpecifier -> .public; AccessSpecifier -> .private; AccessSpecifier -> .protected}
+goto(6, AccessSpecifierSectionList)	{ClassDeclaration -> class id lbrace AccessSpecifierSectionList.rbrace semi}	7	{ClassDeclaration -> class id lbrace AccessSpecifierSectionList.rbrace semi}
+goto(6, AccessSpecifierSection)	{AccessSpecifierSectionList -> AccessSpecifierSection.; AccessSpecifierSectionList -> AccessSpecifierSection.AccessSpecifierSectionList}	8	{AccessSpecifierSectionList -> AccessSpecifierSection.; AccessSpecifierSectionList -> AccessSpecifierSection.AccessSpecifierSectionList; AccessSpecifierSectionList -> .AccessSpecifierSection; AccessSpecifierSectionList -> .AccessSpecifierSection AccessSpecifierSectionList; AccessSpecifierSection -> .AccessSpecifier colon MemberList; AccessSpecifier -> .public; AccessSpecifier -> .private; AccessSpecifier -> .protected}
+goto(6, AccessSpecifier)	{AccessSpecifierSection -> AccessSpecifier.colon MemberList}	9	{AccessSpecifierSection -> AccessSpecifier.colon MemberList}
+goto(6, public)	{AccessSpecifier -> public.}	10	{AccessSpecifier -> public.}
+goto(6, private)	{AccessSpecifier -> private.}	11	{AccessSpecifier -> private.}
+goto(6, protected)	{AccessSpecifier -> protected.}	12	{AccessSpecifier -> protected.}
+goto(7, rbrace)	{ClassDeclaration -> class id lbrace AccessSpecifierSectionList rbrace.semi}	13	{ClassDeclaration -> class id lbrace AccessSpecifierSectionList rbrace.semi}
+goto(8, AccessSpecifierSectionList)	{AccessSpecifierSectionList -> AccessSpecifierSection AccessSpecifierSectionList.}	14	{AccessSpecifierSectionList -> AccessSpecifierSection AccessSpecifierSectionList.}
+goto(8, AccessSpecifierSection)	{AccessSpecifierSectionList -> AccessSpecifierSection.; AccessSpecifierSectionList -> AccessSpecifierSection.AccessSpecifierSectionList}	8	 
+goto(8, AccessSpecifier)	{AccessSpecifierSection -> AccessSpecifier.colon MemberList}	9	 
+goto(8, public)	{AccessSpecifier -> public.}	10	 
+goto(8, private)	{AccessSpecifier -> private.}	11	 
+goto(8, protected)	{AccessSpecifier -> protected.}	12	 
+goto(9, colon)	{AccessSpecifierSection -> AccessSpecifier colon.MemberList}	15	{AccessSpecifierSection -> AccessSpecifier colon.MemberList; MemberList -> .MemberDeclaration; MemberList -> .MemberDeclaration MemberList; MemberDeclaration -> .VariableDeclaration; MemberDeclaration -> .FunctionDeclaration; VariableDeclaration -> .Type id semi; VariableDeclaration -> .Type id equals Expression semi; FunctionDeclaration -> .Type id lparen ParameterList rparen lbrace StatementList rbrace; FunctionDeclaration -> .Type id lparen rparen lbrace StatementList rbrace; Type -> .int; Type -> .char}
+goto(13, semi)	{ClassDeclaration -> class id lbrace AccessSpecifierSectionList rbrace semi.}	16	{ClassDeclaration -> class id lbrace AccessSpecifierSectionList rbrace semi.}
+goto(15, MemberList)	{AccessSpecifierSection -> AccessSpecifier colon MemberList.}	17	{AccessSpecifierSection -> AccessSpecifier colon MemberList.}
+goto(15, MemberDeclaration)	{MemberList -> MemberDeclaration.; MemberList -> MemberDeclaration.MemberList}	18	{MemberList -> MemberDeclaration.; MemberList -> MemberDeclaration.MemberList; MemberList -> .MemberDeclaration; MemberList -> .MemberDeclaration MemberList; MemberDeclaration -> .VariableDeclaration; MemberDeclaration -> .FunctionDeclaration; VariableDeclaration -> .Type id semi; VariableDeclaration -> .Type id equals Expression semi; FunctionDeclaration -> .Type id lparen ParameterList rparen lbrace StatementList rbrace; FunctionDeclaration -> .Type id lparen rparen lbrace StatementList rbrace; Type -> .int; Type -> .char}
+goto(15, VariableDeclaration)	{MemberDeclaration -> VariableDeclaration.}	19	{MemberDeclaration -> VariableDeclaration.}
+goto(15, FunctionDeclaration)	{MemberDeclaration -> FunctionDeclaration.}	20	{MemberDeclaration -> FunctionDeclaration.}
+goto(15, Type)	{VariableDeclaration -> Type.id semi; VariableDeclaration -> Type.id equals Expression semi; FunctionDeclaration -> Type.id lparen ParameterList rparen lbrace StatementList rbrace; FunctionDeclaration -> Type.id lparen rparen lbrace StatementList rbrace}	21	{VariableDeclaration -> Type.id semi; VariableDeclaration -> Type.id equals Expression semi; FunctionDeclaration -> Type.id lparen ParameterList rparen lbrace StatementList rbrace; FunctionDeclaration -> Type.id lparen rparen lbrace StatementList rbrace}
+goto(15, int)	{Type -> int.}	22	{Type -> int.}
+goto(15, char)	{Type -> char.}	23	{Type -> char.}
+goto(18, MemberList)	{MemberList -> MemberDeclaration MemberList.}	24	{MemberList -> MemberDeclaration MemberList.}
+goto(18, MemberDeclaration)	{MemberList -> MemberDeclaration.; MemberList -> MemberDeclaration.MemberList}	18	 
+goto(18, VariableDeclaration)	{MemberDeclaration -> VariableDeclaration.}	19	 
+goto(18, FunctionDeclaration)	{MemberDeclaration -> FunctionDeclaration.}	20	 
+goto(18, Type)	{VariableDeclaration -> Type.id semi; VariableDeclaration -> Type.id equals Expression semi; FunctionDeclaration -> Type.id lparen ParameterList rparen lbrace StatementList rbrace; FunctionDeclaration -> Type.id lparen rparen lbrace StatementList rbrace}	21	 
+goto(18, int)	{Type -> int.}	22	 
+goto(18, char)	{Type -> char.}	23	 
+goto(21, id)	{VariableDeclaration -> Type id.semi; VariableDeclaration -> Type id.equals Expression semi; FunctionDeclaration -> Type id.lparen ParameterList rparen lbrace StatementList rbrace; FunctionDeclaration -> Type id.lparen rparen lbrace StatementList rbrace}	25	{VariableDeclaration -> Type id.semi; VariableDeclaration -> Type id.equals Expression semi; FunctionDeclaration -> Type id.lparen ParameterList rparen lbrace StatementList rbrace; FunctionDeclaration -> Type id.lparen rparen lbrace StatementList rbrace}
+goto(25, semi)	{VariableDeclaration -> Type id semi.}	26	{VariableDeclaration -> Type id semi.}
+goto(25, equals)	{VariableDeclaration -> Type id equals.Expression semi}	27	{VariableDeclaration -> Type id equals.Expression semi; Expression -> .Expression plus Term; Expression -> .Expression minus Term; Expression -> .Expression lessthan Term; Expression -> .Expression greaterthan Term; Expression -> .Term; Term -> .Term star Factor; Term -> .Term slash Factor; Term -> .Factor; Factor -> .id; Factor -> .intlit; Factor -> .lparen Expression rparen; Factor -> .id dot id}
+goto(25, lparen)	{FunctionDeclaration -> Type id lparen.ParameterList rparen lbrace StatementList rbrace; FunctionDeclaration -> Type id lparen.rparen lbrace StatementList rbrace}	28	{FunctionDeclaration -> Type id lparen.ParameterList rparen lbrace StatementList rbrace; FunctionDeclaration -> Type id lparen.rparen lbrace StatementList rbrace; ParameterList -> .Parameter; ParameterList -> .Parameter comma ParameterList; Parameter -> .Type id; Type -> .int; Type -> .char}
+goto(27, Expression)	{VariableDeclaration -> Type id equals Expression.semi; Expression -> Expression.plus Term; Expression -> Expression.minus Term; Expression -> Expression.lessthan Term; Expression -> Expression.greaterthan Term}	29	{VariableDeclaration -> Type id equals Expression.semi; Expression -> Expression.plus Term; Expression -> Expression.minus Term; Expression -> Expression.lessthan Term; Expression -> Expression.greaterthan Term}
+goto(27, Term)	{Expression -> Term.; Term -> Term.star Factor; Term -> Term.slash Factor}	30	{Expression -> Term.; Term -> Term.star Factor; Term -> Term.slash Factor}
+goto(27, Factor)	{Term -> Factor.}	31	{Term -> Factor.}
+goto(27, id)	{Factor -> id.; Factor -> id.dot id}	32	{Factor -> id.; Factor -> id.dot id}
+goto(27, intlit)	{Factor -> intlit.}	33	{Factor -> intlit.}
+goto(27, lparen)	{Factor -> lparen.Expression rparen}	34	{Factor -> lparen.Expression rparen; Expression -> .Expression plus Term; Expression -> .Expression minus Term; Expression -> .Expression lessthan Term; Expression -> .Expression greaterthan Term; Expression -> .Term; Term -> .Term star Factor; Term -> .Term slash Factor; Term -> .Factor; Factor -> .id; Factor -> .intlit; Factor -> .lparen Expression rparen; Factor -> .id dot id}
+goto(28, ParameterList)	{FunctionDeclaration -> Type id lparen ParameterList.rparen lbrace StatementList rbrace}	35	{FunctionDeclaration -> Type id lparen ParameterList.rparen lbrace StatementList rbrace}
+goto(28, rparen)	{FunctionDeclaration -> Type id lparen rparen.lbrace StatementList rbrace}	36	{FunctionDeclaration -> Type id lparen rparen.lbrace StatementList rbrace}
+goto(28, Parameter)	{ParameterList -> Parameter.; ParameterList -> Parameter.comma ParameterList}	37	{ParameterList -> Parameter.; ParameterList -> Parameter.comma ParameterList}
+goto(28, Type)	{Parameter -> Type.id}	38	{Parameter -> Type.id}
+goto(28, int)	{Type -> int.}	22	 
+goto(28, char)	{Type -> char.}	23	 
+goto(29, semi)	{VariableDeclaration -> Type id equals Expression semi.}	39	{VariableDeclaration -> Type id equals Expression semi.}
+goto(29, plus)	{Expression -> Expression plus.Term}	40	{Expression -> Expression plus.Term; Term -> .Term star Factor; Term -> .Term slash Factor; Term -> .Factor; Factor -> .id; Factor -> .intlit; Factor -> .lparen Expression rparen; Factor -> .id dot id}
+goto(29, minus)	{Expression -> Expression minus.Term}	41	{Expression -> Expression minus.Term; Term -> .Term star Factor; Term -> .Term slash Factor; Term -> .Factor; Factor -> .id; Factor -> .intlit; Factor -> .lparen Expression rparen; Factor -> .id dot id}
+goto(29, lessthan)	{Expression -> Expression lessthan.Term}	42	{Expression -> Expression lessthan.Term; Term -> .Term star Factor; Term -> .Term slash Factor; Term -> .Factor; Factor -> .id; Factor -> .intlit; Factor -> .lparen Expression rparen; Factor -> .id dot id}
+goto(29, greaterthan)	{Expression -> Expression greaterthan.Term}	43	{Expression -> Expression greaterthan.Term; Term -> .Term star Factor; Term -> .Term slash Factor; Term -> .Factor; Factor -> .id; Factor -> .intlit; Factor -> .lparen Expression rparen; Factor -> .id dot id}
+goto(30, star)	{Term -> Term star.Factor}	44	{Term -> Term star.Factor; Factor -> .id; Factor -> .intlit; Factor -> .lparen Expression rparen; Factor -> .id dot id}
+goto(30, slash)	{Term -> Term slash.Factor}	45	{Term -> Term slash.Factor; Factor -> .id; Factor -> .intlit; Factor -> .lparen Expression rparen; Factor -> .id dot id}
+goto(32, dot)	{Factor -> id dot.id}	46	{Factor -> id dot.id}
+goto(34, Expression)	{Factor -> lparen Expression.rparen; Expression -> Expression.plus Term; Expression -> Expression.minus Term; Expression -> Expression.lessthan Term; Expression -> Expression.greaterthan Term}	47	{Factor -> lparen Expression.rparen; Expression -> Expression.plus Term; Expression -> Expression.minus Term; Expression -> Expression.lessthan Term; Expression -> Expression.greaterthan Term}
+goto(34, Term)	{Expression -> Term.; Term -> Term.star Factor; Term -> Term.slash Factor}	30	 
+goto(34, Factor)	{Term -> Factor.}	31	 
+goto(34, id)	{Factor -> id.; Factor -> id.dot id}	32	 
+goto(34, intlit)	{Factor -> intlit.}	33	 
+goto(34, lparen)	{Factor -> lparen.Expression rparen}	34	 
+goto(35, rparen)	{FunctionDeclaration -> Type id lparen ParameterList rparen.lbrace StatementList rbrace}	48	{FunctionDeclaration -> Type id lparen ParameterList rparen.lbrace StatementList rbrace}
+goto(36, lbrace)	{FunctionDeclaration -> Type id lparen rparen lbrace.StatementList rbrace}	49	{FunctionDeclaration -> Type id lparen rparen lbrace.StatementList rbrace; StatementList -> .Statement; StatementList -> .Statement StatementList; Statement -> .VariableDeclaration; Statement -> .AssignmentStatement; Statement -> .IfStatement; Statement -> .WhileStatement; Statement -> .ForStatement; Statement -> .ReturnStatement; Statement -> .NewStatement; Statement -> .DeleteStatement; Statement -> .ExpressionStatement; VariableDeclaration -> .Type id semi; VariableDeclaration -> .Type id equals Expression semi; AssignmentStatement -> .id equals Expression semi; IfStatement -> .if lparen Expression rparen lbrace StatementList rbrace; IfStatement -> .if lparen Expression rparen lbrace StatementList rbrace else lbrace StatementList rbrace; WhileStatement -> .while lparen Expression rparen lbrace StatementList rbrace; ForStatement -> .for lparen ForInitialiser Expression semi Expression rparen lbrace StatementList rbrace; ReturnStatement -> .return Expression semi; ReturnStatement -> .return semi; NewStatement -> .Type id equals new id lparen ArgumentList rparen semi; NewStatement -> .Type id equals new id lparen rparen semi; DeleteStatement -> .delete id semi; ExpressionStatement -> .Expression semi; Type -> .int; Type -> .char; Expression -> .Expression plus Term; Expression -> .Expression minus Term; Expression -> .Expression lessthan Term; Expression -> .Expression greaterthan Term; Expression -> .Term; Term -> .Term star Factor; Term -> .Term slash Factor; Term -> .Factor; Factor -> .id; Factor -> .intlit; Factor -> .lparen Expression rparen; Factor -> .id dot id}
+goto(37, comma)	{ParameterList -> Parameter comma.ParameterList}	50	{ParameterList -> Parameter comma.ParameterList; ParameterList -> .Parameter; ParameterList -> .Parameter comma ParameterList; Parameter -> .Type id; Type -> .int; Type -> .char}
+goto(38, id)	{Parameter -> Type id.}	51	{Parameter -> Type id.}
+goto(40, Term)	{Expression -> Expression plus Term.; Term -> Term.star Factor; Term -> Term.slash Factor}	52	{Expression -> Expression plus Term.; Term -> Term.star Factor; Term -> Term.slash Factor}
+goto(40, Factor)	{Term -> Factor.}	31	 
+goto(40, id)	{Factor -> id.; Factor -> id.dot id}	32	 
+goto(40, intlit)	{Factor -> intlit.}	33	 
+goto(40, lparen)	{Factor -> lparen.Expression rparen}	34	 
+goto(41, Term)	{Expression -> Expression minus Term.; Term -> Term.star Factor; Term -> Term.slash Factor}	53	{Expression -> Expression minus Term.; Term -> Term.star Factor; Term -> Term.slash Factor}
+goto(41, Factor)	{Term -> Factor.}	31	 
+goto(41, id)	{Factor -> id.; Factor -> id.dot id}	32	 
+goto(41, intlit)	{Factor -> intlit.}	33	 
+goto(41, lparen)	{Factor -> lparen.Expression rparen}	34	 
+goto(42, Term)	{Expression -> Expression lessthan Term.; Term -> Term.star Factor; Term -> Term.slash Factor}	54	{Expression -> Expression lessthan Term.; Term -> Term.star Factor; Term -> Term.slash Factor}
+goto(42, Factor)	{Term -> Factor.}	31	 
+goto(42, id)	{Factor -> id.; Factor -> id.dot id}	32	 
+goto(42, intlit)	{Factor -> intlit.}	33	 
+goto(42, lparen)	{Factor -> lparen.Expression rparen}	34	 
+goto(43, Term)	{Expression -> Expression greaterthan Term.; Term -> Term.star Factor; Term -> Term.slash Factor}	55	{Expression -> Expression greaterthan Term.; Term -> Term.star Factor; Term -> Term.slash Factor}
+goto(43, Factor)	{Term -> Factor.}	31	 
+goto(43, id)	{Factor -> id.; Factor -> id.dot id}	32	 
+goto(43, intlit)	{Factor -> intlit.}	33	 
+goto(43, lparen)	{Factor -> lparen.Expression rparen}	34	 
+goto(44, Factor)	{Term -> Term star Factor.}	56	{Term -> Term star Factor.}
+goto(44, id)	{Factor -> id.; Factor -> id.dot id}	32	 
+goto(44, intlit)	{Factor -> intlit.}	33	 
+goto(44, lparen)	{Factor -> lparen.Expression rparen}	34	 
+goto(45, Factor)	{Term -> Term slash Factor.}	57	{Term -> Term slash Factor.}
+goto(45, id)	{Factor -> id.; Factor -> id.dot id}	32	 
+goto(45, intlit)	{Factor -> intlit.}	33	 
+goto(45, lparen)	{Factor -> lparen.Expression rparen}	34	 
+goto(46, id)	{Factor -> id dot id.}	58	{Factor -> id dot id.}
+goto(47, rparen)	{Factor -> lparen Expression rparen.}	59	{Factor -> lparen Expression rparen.}
+goto(47, plus)	{Expression -> Expression plus.Term}	40	 
+goto(47, minus)	{Expression -> Expression minus.Term}	41	 
+goto(47, lessthan)	{Expression -> Expression lessthan.Term}	42	 
+goto(47, greaterthan)	{Expression -> Expression greaterthan.Term}	43	 
+goto(48, lbrace)	{FunctionDeclaration -> Type id lparen ParameterList rparen lbrace.StatementList rbrace}	60	{FunctionDeclaration -> Type id lparen ParameterList rparen lbrace.StatementList rbrace; StatementList -> .Statement; StatementList -> .Statement StatementList; Statement -> .VariableDeclaration; Statement -> .AssignmentStatement; Statement -> .IfStatement; Statement -> .WhileStatement; Statement -> .ForStatement; Statement -> .ReturnStatement; Statement -> .NewStatement; Statement -> .DeleteStatement; Statement -> .ExpressionStatement; VariableDeclaration -> .Type id semi; VariableDeclaration -> .Type id equals Expression semi; AssignmentStatement -> .id equals Expression semi; IfStatement -> .if lparen Expression rparen lbrace StatementList rbrace; IfStatement -> .if lparen Expression rparen lbrace StatementList rbrace else lbrace StatementList rbrace; WhileStatement -> .while lparen Expression rparen lbrace StatementList rbrace; ForStatement -> .for lparen ForInitialiser Expression semi Expression rparen lbrace StatementList rbrace; ReturnStatement -> .return Expression semi; ReturnStatement -> .return semi; NewStatement -> .Type id equals new id lparen ArgumentList rparen semi; NewStatement -> .Type id equals new id lparen rparen semi; DeleteStatement -> .delete id semi; ExpressionStatement -> .Expression semi; Type -> .int; Type -> .char; Expression -> .Expression plus Term; Expression -> .Expression minus Term; Expression -> .Expression lessthan Term; Expression -> .Expression greaterthan Term; Expression -> .Term; Term -> .Term star Factor; Term -> .Term slash Factor; Term -> .Factor; Factor -> .id; Factor -> .intlit; Factor -> .lparen Expression rparen; Factor -> .id dot id}
+goto(49, StatementList)	{FunctionDeclaration -> Type id lparen rparen lbrace StatementList.rbrace}	61	{FunctionDeclaration -> Type id lparen rparen lbrace StatementList.rbrace}
+goto(49, Statement)	{StatementList -> Statement.; StatementList -> Statement.StatementList}	62	{StatementList -> Statement.; StatementList -> Statement.StatementList; StatementList -> .Statement; StatementList -> .Statement StatementList; Statement -> .VariableDeclaration; Statement -> .AssignmentStatement; Statement -> .IfStatement; Statement -> .WhileStatement; Statement -> .ForStatement; Statement -> .ReturnStatement; Statement -> .NewStatement; Statement -> .DeleteStatement; Statement -> .ExpressionStatement; VariableDeclaration -> .Type id semi; VariableDeclaration -> .Type id equals Expression semi; AssignmentStatement -> .id equals Expression semi; IfStatement -> .if lparen Expression rparen lbrace StatementList rbrace; IfStatement -> .if lparen Expression rparen lbrace StatementList rbrace else lbrace StatementList rbrace; WhileStatement -> .while lparen Expression rparen lbrace StatementList rbrace; ForStatement -> .for lparen ForInitialiser Expression semi Expression rparen lbrace StatementList rbrace; ReturnStatement -> .return Expression semi; ReturnStatement -> .return semi; NewStatement -> .Type id equals new id lparen ArgumentList rparen semi; NewStatement -> .Type id equals new id lparen rparen semi; DeleteStatement -> .delete id semi; ExpressionStatement -> .Expression semi; Type -> .int; Type -> .char; Expression -> .Expression plus Term; Expression -> .Expression minus Term; Expression -> .Expression lessthan Term; Expression -> .Expression greaterthan Term; Expression -> .Term; Term -> .Term star Factor; Term -> .Term slash Factor; Term -> .Factor; Factor -> .id; Factor -> .intlit; Factor -> .lparen Expression rparen; Factor -> .id dot id}
+goto(49, VariableDeclaration)	{Statement -> VariableDeclaration.}	63	{Statement -> VariableDeclaration.}
+goto(49, AssignmentStatement)	{Statement -> AssignmentStatement.}	64	{Statement -> AssignmentStatement.}
+goto(49, IfStatement)	{Statement -> IfStatement.}	65	{Statement -> IfStatement.}
+goto(49, WhileStatement)	{Statement -> WhileStatement.}	66	{Statement -> WhileStatement.}
+goto(49, ForStatement)	{Statement -> ForStatement.}	67	{Statement -> ForStatement.}
+goto(49, ReturnStatement)	{Statement -> ReturnStatement.}	68	{Statement -> ReturnStatement.}
+goto(49, NewStatement)	{Statement -> NewStatement.}	69	{Statement -> NewStatement.}
+goto(49, DeleteStatement)	{Statement -> DeleteStatement.}	70	{Statement -> DeleteStatement.}
+goto(49, ExpressionStatement)	{Statement -> ExpressionStatement.}	71	{Statement -> ExpressionStatement.}
+goto(49, Type)	{VariableDeclaration -> Type.id semi; VariableDeclaration -> Type.id equals Expression semi; NewStatement -> Type.id equals new id lparen ArgumentList rparen semi; NewStatement -> Type.id equals new id lparen rparen semi}	72	{VariableDeclaration -> Type.id semi; VariableDeclaration -> Type.id equals Expression semi; NewStatement -> Type.id equals new id lparen ArgumentList rparen semi; NewStatement -> Type.id equals new id lparen rparen semi}
+goto(49, id)	{AssignmentStatement -> id.equals Expression semi; Factor -> id.; Factor -> id.dot id}	73	{AssignmentStatement -> id.equals Expression semi; Factor -> id.; Factor -> id.dot id}
+goto(49, if)	{IfStatement -> if.lparen Expression rparen lbrace StatementList rbrace; IfStatement -> if.lparen Expression rparen lbrace StatementList rbrace else lbrace StatementList rbrace}	74	{IfStatement -> if.lparen Expression rparen lbrace StatementList rbrace; IfStatement -> if.lparen Expression rparen lbrace StatementList rbrace else lbrace StatementList rbrace}
+goto(49, while)	{WhileStatement -> while.lparen Expression rparen lbrace StatementList rbrace}	75	{WhileStatement -> while.lparen Expression rparen lbrace StatementList rbrace}
+goto(49, for)	{ForStatement -> for.lparen ForInitialiser Expression semi Expression rparen lbrace StatementList rbrace}	76	{ForStatement -> for.lparen ForInitialiser Expression semi Expression rparen lbrace StatementList rbrace}
+goto(49, return)	{ReturnStatement -> return.Expression semi; ReturnStatement -> return.semi}	77	{ReturnStatement -> return.Expression semi; ReturnStatement -> return.semi; Expression -> .Expression plus Term; Expression -> .Expression minus Term; Expression -> .Expression lessthan Term; Expression -> .Expression greaterthan Term; Expression -> .Term; Term -> .Term star Factor; Term -> .Term slash Factor; Term -> .Factor; Factor -> .id; Factor -> .intlit; Factor -> .lparen Expression rparen; Factor -> .id dot id}
+goto(49, delete)	{DeleteStatement -> delete.id semi}	78	{DeleteStatement -> delete.id semi}
+goto(49, Expression)	{ExpressionStatement -> Expression.semi; Expression -> Expression.plus Term; Expression -> Expression.minus Term; Expression -> Expression.lessthan Term; Expression -> Expression.greaterthan Term}	79	{ExpressionStatement -> Expression.semi; Expression -> Expression.plus Term; Expression -> Expression.minus Term; Expression -> Expression.lessthan Term; Expression -> Expression.greaterthan Term}
+goto(49, int)	{Type -> int.}	22	 
+goto(49, char)	{Type -> char.}	23	 
+goto(49, Term)	{Expression -> Term.; Term -> Term.star Factor; Term -> Term.slash Factor}	30	 
+goto(49, Factor)	{Term -> Factor.}	31	 
+goto(49, intlit)	{Factor -> intlit.}	33	 
+goto(49, lparen)	{Factor -> lparen.Expression rparen}	34	 
+goto(50, ParameterList)	{ParameterList -> Parameter comma ParameterList.}	80	{ParameterList -> Parameter comma ParameterList.}
+goto(50, Parameter)	{ParameterList -> Parameter.; ParameterList -> Parameter.comma ParameterList}	37	 
+goto(50, Type)	{Parameter -> Type.id}	38	 
+goto(50, int)	{Type -> int.}	22	 
+goto(50, char)	{Type -> char.}	23	 
+goto(52, star)	{Term -> Term star.Factor}	44	 
+goto(52, slash)	{Term -> Term slash.Factor}	45	 
+goto(53, star)	{Term -> Term star.Factor}	44	 
+goto(53, slash)	{Term -> Term slash.Factor}	45	 
+goto(54, star)	{Term -> Term star.Factor}	44	 
+goto(54, slash)	{Term -> Term slash.Factor}	45	 
+goto(55, star)	{Term -> Term star.Factor}	44	 
+goto(55, slash)	{Term -> Term slash.Factor}	45	 
+goto(60, StatementList)	{FunctionDeclaration -> Type id lparen ParameterList rparen lbrace StatementList.rbrace}	81	{FunctionDeclaration -> Type id lparen ParameterList rparen lbrace StatementList.rbrace}
+goto(60, Statement)	{StatementList -> Statement.; StatementList -> Statement.StatementList}	62	 
+goto(60, VariableDeclaration)	{Statement -> VariableDeclaration.}	63	 
+goto(60, AssignmentStatement)	{Statement -> AssignmentStatement.}	64	 
+goto(60, IfStatement)	{Statement -> IfStatement.}	65	 
+goto(60, WhileStatement)	{Statement -> WhileStatement.}	66	 
+goto(60, ForStatement)	{Statement -> ForStatement.}	67	 
+goto(60, ReturnStatement)	{Statement -> ReturnStatement.}	68	 
+goto(60, NewStatement)	{Statement -> NewStatement.}	69	 
+goto(60, DeleteStatement)	{Statement -> DeleteStatement.}	70	 
+goto(60, ExpressionStatement)	{Statement -> ExpressionStatement.}	71	 
+goto(60, Type)	{VariableDeclaration -> Type.id semi; VariableDeclaration -> Type.id equals Expression semi; NewStatement -> Type.id equals new id lparen ArgumentList rparen semi; NewStatement -> Type.id equals new id lparen rparen semi}	72	 
+goto(60, id)	{AssignmentStatement -> id.equals Expression semi; Factor -> id.; Factor -> id.dot id}	73	 
+goto(60, if)	{IfStatement -> if.lparen Expression rparen lbrace StatementList rbrace; IfStatement -> if.lparen Expression rparen lbrace StatementList rbrace else lbrace StatementList rbrace}	74	 
+goto(60, while)	{WhileStatement -> while.lparen Expression rparen lbrace StatementList rbrace}	75	 
+goto(60, for)	{ForStatement -> for.lparen ForInitialiser Expression semi Expression rparen lbrace StatementList rbrace}	76	 
+goto(60, return)	{ReturnStatement -> return.Expression semi; ReturnStatement -> return.semi}	77	 
+goto(60, delete)	{DeleteStatement -> delete.id semi}	78	 
+goto(60, Expression)	{ExpressionStatement -> Expression.semi; Expression -> Expression.plus Term; Expression -> Expression.minus Term; Expression -> Expression.lessthan Term; Expression -> Expression.greaterthan Term}	79	 
+goto(60, int)	{Type -> int.}	22	 
+goto(60, char)	{Type -> char.}	23	 
+goto(60, Term)	{Expression -> Term.; Term -> Term.star Factor; Term -> Term.slash Factor}	30	 
+goto(60, Factor)	{Term -> Factor.}	31	 
+goto(60, intlit)	{Factor -> intlit.}	33	 
+goto(60, lparen)	{Factor -> lparen.Expression rparen}	34	 
+goto(61, rbrace)	{FunctionDeclaration -> Type id lparen rparen lbrace StatementList rbrace.}	82	{FunctionDeclaration -> Type id lparen rparen lbrace StatementList rbrace.}
+goto(62, StatementList)	{StatementList -> Statement StatementList.}	83	{StatementList -> Statement StatementList.}
+goto(62, Statement)	{StatementList -> Statement.; StatementList -> Statement.StatementList}	62	 
+goto(62, VariableDeclaration)	{Statement -> VariableDeclaration.}	63	 
+goto(62, AssignmentStatement)	{Statement -> AssignmentStatement.}	64	 
+goto(62, IfStatement)	{Statement -> IfStatement.}	65	 
+goto(62, WhileStatement)	{Statement -> WhileStatement.}	66	 
+goto(62, ForStatement)	{Statement -> ForStatement.}	67	 
+goto(62, ReturnStatement)	{Statement -> ReturnStatement.}	68	 
+goto(62, NewStatement)	{Statement -> NewStatement.}	69	 
+goto(62, DeleteStatement)	{Statement -> DeleteStatement.}	70	 
+goto(62, ExpressionStatement)	{Statement -> ExpressionStatement.}	71	 
+goto(62, Type)	{VariableDeclaration -> Type.id semi; VariableDeclaration -> Type.id equals Expression semi; NewStatement -> Type.id equals new id lparen ArgumentList rparen semi; NewStatement -> Type.id equals new id lparen rparen semi}	72	 
+goto(62, id)	{AssignmentStatement -> id.equals Expression semi; Factor -> id.; Factor -> id.dot id}	73	 
+goto(62, if)	{IfStatement -> if.lparen Expression rparen lbrace StatementList rbrace; IfStatement -> if.lparen Expression rparen lbrace StatementList rbrace else lbrace StatementList rbrace}	74	 
+goto(62, while)	{WhileStatement -> while.lparen Expression rparen lbrace StatementList rbrace}	75	 
+goto(62, for)	{ForStatement -> for.lparen ForInitialiser Expression semi Expression rparen lbrace StatementList rbrace}	76	 
+goto(62, return)	{ReturnStatement -> return.Expression semi; ReturnStatement -> return.semi}	77	 
+goto(62, delete)	{DeleteStatement -> delete.id semi}	78	 
+goto(62, Expression)	{ExpressionStatement -> Expression.semi; Expression -> Expression.plus Term; Expression -> Expression.minus Term; Expression -> Expression.lessthan Term; Expression -> Expression.greaterthan Term}	79	 
+goto(62, int)	{Type -> int.}	22	 
+goto(62, char)	{Type -> char.}	23	 
+goto(62, Term)	{Expression -> Term.; Term -> Term.star Factor; Term -> Term.slash Factor}	30	 
+goto(62, Factor)	{Term -> Factor.}	31	 
+goto(62, intlit)	{Factor -> intlit.}	33	 
+goto(62, lparen)	{Factor -> lparen.Expression rparen}	34	 
+goto(72, id)	{VariableDeclaration -> Type id.semi; VariableDeclaration -> Type id.equals Expression semi; NewStatement -> Type id.equals new id lparen ArgumentList rparen semi; NewStatement -> Type id.equals new id lparen rparen semi}	84	{VariableDeclaration -> Type id.semi; VariableDeclaration -> Type id.equals Expression semi; NewStatement -> Type id.equals new id lparen ArgumentList rparen semi; NewStatement -> Type id.equals new id lparen rparen semi}
+goto(73, equals)	{AssignmentStatement -> id equals.Expression semi}	85	{AssignmentStatement -> id equals.Expression semi; Expression -> .Expression plus Term; Expression -> .Expression minus Term; Expression -> .Expression lessthan Term; Expression -> .Expression greaterthan Term; Expression -> .Term; Term -> .Term star Factor; Term -> .Term slash Factor; Term -> .Factor; Factor -> .id; Factor -> .intlit; Factor -> .lparen Expression rparen; Factor -> .id dot id}
+goto(73, dot)	{Factor -> id dot.id}	46	 
+goto(74, lparen)	{IfStatement -> if lparen.Expression rparen lbrace StatementList rbrace; IfStatement -> if lparen.Expression rparen lbrace StatementList rbrace else lbrace StatementList rbrace}	86	{IfStatement -> if lparen.Expression rparen lbrace StatementList rbrace; IfStatement -> if lparen.Expression rparen lbrace StatementList rbrace else lbrace StatementList rbrace; Expression -> .Expression plus Term; Expression -> .Expression minus Term; Expression -> .Expression lessthan Term; Expression -> .Expression greaterthan Term; Expression -> .Term; Term -> .Term star Factor; Term -> .Term slash Factor; Term -> .Factor; Factor -> .id; Factor -> .intlit; Factor -> .lparen Expression rparen; Factor -> .id dot id}
+goto(75, lparen)	{WhileStatement -> while lparen.Expression rparen lbrace StatementList rbrace}	87	{WhileStatement -> while lparen.Expression rparen lbrace StatementList rbrace; Expression -> .Expression plus Term; Expression -> .Expression minus Term; Expression -> .Expression lessthan Term; Expression -> .Expression greaterthan Term; Expression -> .Term; Term -> .Term star Factor; Term -> .Term slash Factor; Term -> .Factor; Factor -> .id; Factor -> .intlit; Factor -> .lparen Expression rparen; Factor -> .id dot id}
+goto(76, lparen)	{ForStatement -> for lparen.ForInitialiser Expression semi Expression rparen lbrace StatementList rbrace}	88	{ForStatement -> for lparen.ForInitialiser Expression semi Expression rparen lbrace StatementList rbrace; ForInitialiser -> .VariableDeclaration; ForInitialiser -> .AssignmentStatement; ForInitialiser -> .semi; VariableDeclaration -> .Type id semi; VariableDeclaration -> .Type id equals Expression semi; AssignmentStatement -> .id equals Expression semi; Type -> .int; Type -> .char}
+goto(77, Expression)	{ReturnStatement -> return Expression.semi; Expression -> Expression.plus Term; Expression -> Expression.minus Term; Expression -> Expression.lessthan Term; Expression -> Expression.greaterthan Term}	89	{ReturnStatement -> return Expression.semi; Expression -> Expression.plus Term; Expression -> Expression.minus Term; Expression -> Expression.lessthan Term; Expression -> Expression.greaterthan Term}
+goto(77, semi)	{ReturnStatement -> return semi.}	90	{ReturnStatement -> return semi.}
+goto(77, Term)	{Expression -> Term.; Term -> Term.star Factor; Term -> Term.slash Factor}	30	 
+goto(77, Factor)	{Term -> Factor.}	31	 
+goto(77, id)	{Factor -> id.; Factor -> id.dot id}	32	 
+goto(77, intlit)	{Factor -> intlit.}	33	 
+goto(77, lparen)	{Factor -> lparen.Expression rparen}	34	 
+goto(78, id)	{DeleteStatement -> delete id.semi}	91	{DeleteStatement -> delete id.semi}
+goto(79, semi)	{ExpressionStatement -> Expression semi.}	92	{ExpressionStatement -> Expression semi.}
+goto(79, plus)	{Expression -> Expression plus.Term}	40	 
+goto(79, minus)	{Expression -> Expression minus.Term}	41	 
+goto(79, lessthan)	{Expression -> Expression lessthan.Term}	42	 
+goto(79, greaterthan)	{Expression -> Expression greaterthan.Term}	43	 
+goto(81, rbrace)	{FunctionDeclaration -> Type id lparen ParameterList rparen lbrace StatementList rbrace.}	93	{FunctionDeclaration -> Type id lparen ParameterList rparen lbrace StatementList rbrace.}
+goto(84, semi)	{VariableDeclaration -> Type id semi.}	26	 
+goto(84, equals)	{VariableDeclaration -> Type id equals.Expression semi; NewStatement -> Type id equals.new id lparen ArgumentList rparen semi; NewStatement -> Type id equals.new id lparen rparen semi}	94	{VariableDeclaration -> Type id equals.Expression semi; NewStatement -> Type id equals.new id lparen ArgumentList rparen semi; NewStatement -> Type id equals.new id lparen rparen semi; Expression -> .Expression plus Term; Expression -> .Expression minus Term; Expression -> .Expression lessthan Term; Expression -> .Expression greaterthan Term; Expression -> .Term; Term -> .Term star Factor; Term -> .Term slash Factor; Term -> .Factor; Factor -> .id; Factor -> .intlit; Factor -> .lparen Expression rparen; Factor -> .id dot id}
+goto(85, Expression)	{AssignmentStatement -> id equals Expression.semi; Expression -> Expression.plus Term; Expression -> Expression.minus Term; Expression -> Expression.lessthan Term; Expression -> Expression.greaterthan Term}	95	{AssignmentStatement -> id equals Expression.semi; Expression -> Expression.plus Term; Expression -> Expression.minus Term; Expression -> Expression.lessthan Term; Expression -> Expression.greaterthan Term}
+goto(85, Term)	{Expression -> Term.; Term -> Term.star Factor; Term -> Term.slash Factor}	30	 
+goto(85, Factor)	{Term -> Factor.}	31	 
+goto(85, id)	{Factor -> id.; Factor -> id.dot id}	32	 
+goto(85, intlit)	{Factor -> intlit.}	33	 
+goto(85, lparen)	{Factor -> lparen.Expression rparen}	34	 
+goto(86, Expression)	{IfStatement -> if lparen Expression.rparen lbrace StatementList rbrace; IfStatement -> if lparen Expression.rparen lbrace StatementList rbrace else lbrace StatementList rbrace; Expression -> Expression.plus Term; Expression -> Expression.minus Term; Expression -> Expression.lessthan Term; Expression -> Expression.greaterthan Term}	96	{IfStatement -> if lparen Expression.rparen lbrace StatementList rbrace; IfStatement -> if lparen Expression.rparen lbrace StatementList rbrace else lbrace StatementList rbrace; Expression -> Expression.plus Term; Expression -> Expression.minus Term; Expression -> Expression.lessthan Term; Expression -> Expression.greaterthan Term}
+goto(86, Term)	{Expression -> Term.; Term -> Term.star Factor; Term -> Term.slash Factor}	30	 
+goto(86, Factor)	{Term -> Factor.}	31	 
+goto(86, id)	{Factor -> id.; Factor -> id.dot id}	32	 
+goto(86, intlit)	{Factor -> intlit.}	33	 
+goto(86, lparen)	{Factor -> lparen.Expression rparen}	34	 
+goto(87, Expression)	{WhileStatement -> while lparen Expression.rparen lbrace StatementList rbrace; Expression -> Expression.plus Term; Expression -> Expression.minus Term; Expression -> Expression.lessthan Term; Expression -> Expression.greaterthan Term}	97	{WhileStatement -> while lparen Expression.rparen lbrace StatementList rbrace; Expression -> Expression.plus Term; Expression -> Expression.minus Term; Expression -> Expression.lessthan Term; Expression -> Expression.greaterthan Term}
+goto(87, Term)	{Expression -> Term.; Term -> Term.star Factor; Term -> Term.slash Factor}	30	 
+goto(87, Factor)	{Term -> Factor.}	31	 
+goto(87, id)	{Factor -> id.; Factor -> id.dot id}	32	 
+goto(87, intlit)	{Factor -> intlit.}	33	 
+goto(87, lparen)	{Factor -> lparen.Expression rparen}	34	 
+goto(88, ForInitialiser)	{ForStatement -> for lparen ForInitialiser.Expression semi Expression rparen lbrace StatementList rbrace}	98	{ForStatement -> for lparen ForInitialiser.Expression semi Expression rparen lbrace StatementList rbrace; Expression -> .Expression plus Term; Expression -> .Expression minus Term; Expression -> .Expression lessthan Term; Expression -> .Expression greaterthan Term; Expression -> .Term; Term -> .Term star Factor; Term -> .Term slash Factor; Term -> .Factor; Factor -> .id; Factor -> .intlit; Factor -> .lparen Expression rparen; Factor -> .id dot id}
+goto(88, VariableDeclaration)	{ForInitialiser -> VariableDeclaration.}	99	{ForInitialiser -> VariableDeclaration.}
+goto(88, AssignmentStatement)	{ForInitialiser -> AssignmentStatement.}	100	{ForInitialiser -> AssignmentStatement.}
+goto(88, semi)	{ForInitialiser -> semi.}	101	{ForInitialiser -> semi.}
+goto(88, Type)	{VariableDeclaration -> Type.id semi; VariableDeclaration -> Type.id equals Expression semi}	102	{VariableDeclaration -> Type.id semi; VariableDeclaration -> Type.id equals Expression semi}
+goto(88, id)	{AssignmentStatement -> id.equals Expression semi}	103	{AssignmentStatement -> id.equals Expression semi}
+goto(88, int)	{Type -> int.}	22	 
+goto(88, char)	{Type -> char.}	23	 
+goto(89, semi)	{ReturnStatement -> return Expression semi.}	104	{ReturnStatement -> return Expression semi.}
+goto(89, plus)	{Expression -> Expression plus.Term}	40	 
+goto(89, minus)	{Expression -> Expression minus.Term}	41	 
+goto(89, lessthan)	{Expression -> Expression lessthan.Term}	42	 
+goto(89, greaterthan)	{Expression -> Expression greaterthan.Term}	43	 
+goto(91, semi)	{DeleteStatement -> delete id semi.}	105	{DeleteStatement -> delete id semi.}
+goto(94, Expression)	{VariableDeclaration -> Type id equals Expression.semi; Expression -> Expression.plus Term; Expression -> Expression.minus Term; Expression -> Expression.lessthan Term; Expression -> Expression.greaterthan Term}	29	 
+goto(94, new)	{NewStatement -> Type id equals new.id lparen ArgumentList rparen semi; NewStatement -> Type id equals new.id lparen rparen semi}	106	{NewStatement -> Type id equals new.id lparen ArgumentList rparen semi; NewStatement -> Type id equals new.id lparen rparen semi}
+goto(94, Term)	{Expression -> Term.; Term -> Term.star Factor; Term -> Term.slash Factor}	30	 
+goto(94, Factor)	{Term -> Factor.}	31	 
+goto(94, id)	{Factor -> id.; Factor -> id.dot id}	32	 
+goto(94, intlit)	{Factor -> intlit.}	33	 
+goto(94, lparen)	{Factor -> lparen.Expression rparen}	34	 
+goto(95, semi)	{AssignmentStatement -> id equals Expression semi.}	107	{AssignmentStatement -> id equals Expression semi.}
+goto(95, plus)	{Expression -> Expression plus.Term}	40	 
+goto(95, minus)	{Expression -> Expression minus.Term}	41	 
+goto(95, lessthan)	{Expression -> Expression lessthan.Term}	42	 
+goto(95, greaterthan)	{Expression -> Expression greaterthan.Term}	43	 
+goto(96, rparen)	{IfStatement -> if lparen Expression rparen.lbrace StatementList rbrace; IfStatement -> if lparen Expression rparen.lbrace StatementList rbrace else lbrace StatementList rbrace}	108	{IfStatement -> if lparen Expression rparen.lbrace StatementList rbrace; IfStatement -> if lparen Expression rparen.lbrace StatementList rbrace else lbrace StatementList rbrace}
+goto(96, plus)	{Expression -> Expression plus.Term}	40	 
+goto(96, minus)	{Expression -> Expression minus.Term}	41	 
+goto(96, lessthan)	{Expression -> Expression lessthan.Term}	42	 
+goto(96, greaterthan)	{Expression -> Expression greaterthan.Term}	43	 
+goto(97, rparen)	{WhileStatement -> while lparen Expression rparen.lbrace StatementList rbrace}	109	{WhileStatement -> while lparen Expression rparen.lbrace StatementList rbrace}
+goto(97, plus)	{Expression -> Expression plus.Term}	40	 
+goto(97, minus)	{Expression -> Expression minus.Term}	41	 
+goto(97, lessthan)	{Expression -> Expression lessthan.Term}	42	 
+goto(97, greaterthan)	{Expression -> Expression greaterthan.Term}	43	 
+goto(98, Expression)	{ForStatement -> for lparen ForInitialiser Expression.semi Expression rparen lbrace StatementList rbrace; Expression -> Expression.plus Term; Expression -> Expression.minus Term; Expression -> Expression.lessthan Term; Expression -> Expression.greaterthan Term}	110	{ForStatement -> for lparen ForInitialiser Expression.semi Expression rparen lbrace StatementList rbrace; Expression -> Expression.plus Term; Expression -> Expression.minus Term; Expression -> Expression.lessthan Term; Expression -> Expression.greaterthan Term}
+goto(98, Term)	{Expression -> Term.; Term -> Term.star Factor; Term -> Term.slash Factor}	30	 
+goto(98, Factor)	{Term -> Factor.}	31	 
+goto(98, id)	{Factor -> id.; Factor -> id.dot id}	32	 
+goto(98, intlit)	{Factor -> intlit.}	33	 
+goto(98, lparen)	{Factor -> lparen.Expression rparen}	34	 
+goto(102, id)	{VariableDeclaration -> Type id.semi; VariableDeclaration -> Type id.equals Expression semi}	111	{VariableDeclaration -> Type id.semi; VariableDeclaration -> Type id.equals Expression semi}
+goto(103, equals)	{AssignmentStatement -> id equals.Expression semi}	85	 
+goto(106, id)	{NewStatement -> Type id equals new id.lparen ArgumentList rparen semi; NewStatement -> Type id equals new id.lparen rparen semi}	112	{NewStatement -> Type id equals new id.lparen ArgumentList rparen semi; NewStatement -> Type id equals new id.lparen rparen semi}
+goto(108, lbrace)	{IfStatement -> if lparen Expression rparen lbrace.StatementList rbrace; IfStatement -> if lparen Expression rparen lbrace.StatementList rbrace else lbrace StatementList rbrace}	113	{IfStatement -> if lparen Expression rparen lbrace.StatementList rbrace; IfStatement -> if lparen Expression rparen lbrace.StatementList rbrace else lbrace StatementList rbrace; StatementList -> .Statement; StatementList -> .Statement StatementList; Statement -> .VariableDeclaration; Statement -> .AssignmentStatement; Statement -> .IfStatement; Statement -> .WhileStatement; Statement -> .ForStatement; Statement -> .ReturnStatement; Statement -> .NewStatement; Statement -> .DeleteStatement; Statement -> .ExpressionStatement; VariableDeclaration -> .Type id semi; VariableDeclaration -> .Type id equals Expression semi; AssignmentStatement -> .id equals Expression semi; IfStatement -> .if lparen Expression rparen lbrace StatementList rbrace; IfStatement -> .if lparen Expression rparen lbrace StatementList rbrace else lbrace StatementList rbrace; WhileStatement -> .while lparen Expression rparen lbrace StatementList rbrace; ForStatement -> .for lparen ForInitialiser Expression semi Expression rparen lbrace StatementList rbrace; ReturnStatement -> .return Expression semi; ReturnStatement -> .return semi; NewStatement -> .Type id equals new id lparen ArgumentList rparen semi; NewStatement -> .Type id equals new id lparen rparen semi; DeleteStatement -> .delete id semi; ExpressionStatement -> .Expression semi; Type -> .int; Type -> .char; Expression -> .Expression plus Term; Expression -> .Expression minus Term; Expression -> .Expression lessthan Term; Expression -> .Expression greaterthan Term; Expression -> .Term; Term -> .Term star Factor; Term -> .Term slash Factor; Term -> .Factor; Factor -> .id; Factor -> .intlit; Factor -> .lparen Expression rparen; Factor -> .id dot id}
+goto(109, lbrace)	{WhileStatement -> while lparen Expression rparen lbrace.StatementList rbrace}	114	{WhileStatement -> while lparen Expression rparen lbrace.StatementList rbrace; StatementList -> .Statement; StatementList -> .Statement StatementList; Statement -> .VariableDeclaration; Statement -> .AssignmentStatement; Statement -> .IfStatement; Statement -> .WhileStatement; Statement -> .ForStatement; Statement -> .ReturnStatement; Statement -> .NewStatement; Statement -> .DeleteStatement; Statement -> .ExpressionStatement; VariableDeclaration -> .Type id semi; VariableDeclaration -> .Type id equals Expression semi; AssignmentStatement -> .id equals Expression semi; IfStatement -> .if lparen Expression rparen lbrace StatementList rbrace; IfStatement -> .if lparen Expression rparen lbrace StatementList rbrace else lbrace StatementList rbrace; WhileStatement -> .while lparen Expression rparen lbrace StatementList rbrace; ForStatement -> .for lparen ForInitialiser Expression semi Expression rparen lbrace StatementList rbrace; ReturnStatement -> .return Expression semi; ReturnStatement -> .return semi; NewStatement -> .Type id equals new id lparen ArgumentList rparen semi; NewStatement -> .Type id equals new id lparen rparen semi; DeleteStatement -> .delete id semi; ExpressionStatement -> .Expression semi; Type -> .int; Type -> .char; Expression -> .Expression plus Term; Expression -> .Expression minus Term; Expression -> .Expression lessthan Term; Expression -> .Expression greaterthan Term; Expression -> .Term; Term -> .Term star Factor; Term -> .Term slash Factor; Term -> .Factor; Factor -> .id; Factor -> .intlit; Factor -> .lparen Expression rparen; Factor -> .id dot id}
+goto(110, semi)	{ForStatement -> for lparen ForInitialiser Expression semi.Expression rparen lbrace StatementList rbrace}	115	{ForStatement -> for lparen ForInitialiser Expression semi.Expression rparen lbrace StatementList rbrace; Expression -> .Expression plus Term; Expression -> .Expression minus Term; Expression -> .Expression lessthan Term; Expression -> .Expression greaterthan Term; Expression -> .Term; Term -> .Term star Factor; Term -> .Term slash Factor; Term -> .Factor; Factor -> .id; Factor -> .intlit; Factor -> .lparen Expression rparen; Factor -> .id dot id}
+goto(110, plus)	{Expression -> Expression plus.Term}	40	 
+goto(110, minus)	{Expression -> Expression minus.Term}	41	 
+goto(110, lessthan)	{Expression -> Expression lessthan.Term}	42	 
+goto(110, greaterthan)	{Expression -> Expression greaterthan.Term}	43	 
+goto(111, semi)	{VariableDeclaration -> Type id semi.}	26	 
+goto(111, equals)	{VariableDeclaration -> Type id equals.Expression semi}	27	 
+goto(112, lparen)	{NewStatement -> Type id equals new id lparen.ArgumentList rparen semi; NewStatement -> Type id equals new id lparen.rparen semi}	116	{NewStatement -> Type id equals new id lparen.ArgumentList rparen semi; NewStatement -> Type id equals new id lparen.rparen semi; ArgumentList -> .Expression; ArgumentList -> .Expression comma ArgumentList; Expression -> .Expression plus Term; Expression -> .Expression minus Term; Expression -> .Expression lessthan Term; Expression -> .Expression greaterthan Term; Expression -> .Term; Term -> .Term star Factor; Term -> .Term slash Factor; Term -> .Factor; Factor -> .id; Factor -> .intlit; Factor -> .lparen Expression rparen; Factor -> .id dot id}
+goto(113, StatementList)	{IfStatement -> if lparen Expression rparen lbrace StatementList.rbrace; IfStatement -> if lparen Expression rparen lbrace StatementList.rbrace else lbrace StatementList rbrace}	117	{IfStatement -> if lparen Expression rparen lbrace StatementList.rbrace; IfStatement -> if lparen Expression rparen lbrace StatementList.rbrace else lbrace StatementList rbrace}
+goto(113, Statement)	{StatementList -> Statement.; StatementList -> Statement.StatementList}	62	 
+goto(113, VariableDeclaration)	{Statement -> VariableDeclaration.}	63	 
+goto(113, AssignmentStatement)	{Statement -> AssignmentStatement.}	64	 
+goto(113, IfStatement)	{Statement -> IfStatement.}	65	 
+goto(113, WhileStatement)	{Statement -> WhileStatement.}	66	 
+goto(113, ForStatement)	{Statement -> ForStatement.}	67	 
+goto(113, ReturnStatement)	{Statement -> ReturnStatement.}	68	 
+goto(113, NewStatement)	{Statement -> NewStatement.}	69	 
+goto(113, DeleteStatement)	{Statement -> DeleteStatement.}	70	 
+goto(113, ExpressionStatement)	{Statement -> ExpressionStatement.}	71	 
+goto(113, Type)	{VariableDeclaration -> Type.id semi; VariableDeclaration -> Type.id equals Expression semi; NewStatement -> Type.id equals new id lparen ArgumentList rparen semi; NewStatement -> Type.id equals new id lparen rparen semi}	72	 
+goto(113, id)	{AssignmentStatement -> id.equals Expression semi; Factor -> id.; Factor -> id.dot id}	73	 
+goto(113, if)	{IfStatement -> if.lparen Expression rparen lbrace StatementList rbrace; IfStatement -> if.lparen Expression rparen lbrace StatementList rbrace else lbrace StatementList rbrace}	74	 
+goto(113, while)	{WhileStatement -> while.lparen Expression rparen lbrace StatementList rbrace}	75	 
+goto(113, for)	{ForStatement -> for.lparen ForInitialiser Expression semi Expression rparen lbrace StatementList rbrace}	76	 
+goto(113, return)	{ReturnStatement -> return.Expression semi; ReturnStatement -> return.semi}	77	 
+goto(113, delete)	{DeleteStatement -> delete.id semi}	78	 
+goto(113, Expression)	{ExpressionStatement -> Expression.semi; Expression -> Expression.plus Term; Expression -> Expression.minus Term; Expression -> Expression.lessthan Term; Expression -> Expression.greaterthan Term}	79	 
+goto(113, int)	{Type -> int.}	22	 
+goto(113, char)	{Type -> char.}	23	 
+goto(113, Term)	{Expression -> Term.; Term -> Term.star Factor; Term -> Term.slash Factor}	30	 
+goto(113, Factor)	{Term -> Factor.}	31	 
+goto(113, intlit)	{Factor -> intlit.}	33	 
+goto(113, lparen)	{Factor -> lparen.Expression rparen}	34	 
+goto(114, StatementList)	{WhileStatement -> while lparen Expression rparen lbrace StatementList.rbrace}	118	{WhileStatement -> while lparen Expression rparen lbrace StatementList.rbrace}
+goto(114, Statement)	{StatementList -> Statement.; StatementList -> Statement.StatementList}	62	 
+goto(114, VariableDeclaration)	{Statement -> VariableDeclaration.}	63	 
+goto(114, AssignmentStatement)	{Statement -> AssignmentStatement.}	64	 
+goto(114, IfStatement)	{Statement -> IfStatement.}	65	 
+goto(114, WhileStatement)	{Statement -> WhileStatement.}	66	 
+goto(114, ForStatement)	{Statement -> ForStatement.}	67	 
+goto(114, ReturnStatement)	{Statement -> ReturnStatement.}	68	 
+goto(114, NewStatement)	{Statement -> NewStatement.}	69	 
+goto(114, DeleteStatement)	{Statement -> DeleteStatement.}	70	 
+goto(114, ExpressionStatement)	{Statement -> ExpressionStatement.}	71	 
+goto(114, Type)	{VariableDeclaration -> Type.id semi; VariableDeclaration -> Type.id equals Expression semi; NewStatement -> Type.id equals new id lparen ArgumentList rparen semi; NewStatement -> Type.id equals new id lparen rparen semi}	72	 
+goto(114, id)	{AssignmentStatement -> id.equals Expression semi; Factor -> id.; Factor -> id.dot id}	73	 
+goto(114, if)	{IfStatement -> if.lparen Expression rparen lbrace StatementList rbrace; IfStatement -> if.lparen Expression rparen lbrace StatementList rbrace else lbrace StatementList rbrace}	74	 
+goto(114, while)	{WhileStatement -> while.lparen Expression rparen lbrace StatementList rbrace}	75	 
+goto(114, for)	{ForStatement -> for.lparen ForInitialiser Expression semi Expression rparen lbrace StatementList rbrace}	76	 
+goto(114, return)	{ReturnStatement -> return.Expression semi; ReturnStatement -> return.semi}	77	 
+goto(114, delete)	{DeleteStatement -> delete.id semi}	78	 
+goto(114, Expression)	{ExpressionStatement -> Expression.semi; Expression -> Expression.plus Term; Expression -> Expression.minus Term; Expression -> Expression.lessthan Term; Expression -> Expression.greaterthan Term}	79	 
+goto(114, int)	{Type -> int.}	22	 
+goto(114, char)	{Type -> char.}	23	 
+goto(114, Term)	{Expression -> Term.; Term -> Term.star Factor; Term -> Term.slash Factor}	30	 
+goto(114, Factor)	{Term -> Factor.}	31	 
+goto(114, intlit)	{Factor -> intlit.}	33	 
+goto(114, lparen)	{Factor -> lparen.Expression rparen}	34	 
+goto(115, Expression)	{ForStatement -> for lparen ForInitialiser Expression semi Expression.rparen lbrace StatementList rbrace; Expression -> Expression.plus Term; Expression -> Expression.minus Term; Expression -> Expression.lessthan Term; Expression -> Expression.greaterthan Term}	119	{ForStatement -> for lparen ForInitialiser Expression semi Expression.rparen lbrace StatementList rbrace; Expression -> Expression.plus Term; Expression -> Expression.minus Term; Expression -> Expression.lessthan Term; Expression -> Expression.greaterthan Term}
+goto(115, Term)	{Expression -> Term.; Term -> Term.star Factor; Term -> Term.slash Factor}	30	 
+goto(115, Factor)	{Term -> Factor.}	31	 
+goto(115, id)	{Factor -> id.; Factor -> id.dot id}	32	 
+goto(115, intlit)	{Factor -> intlit.}	33	 
+goto(115, lparen)	{Factor -> lparen.Expression rparen}	34	 
+goto(116, ArgumentList)	{NewStatement -> Type id equals new id lparen ArgumentList.rparen semi}	120	{NewStatement -> Type id equals new id lparen ArgumentList.rparen semi}
+goto(116, rparen)	{NewStatement -> Type id equals new id lparen rparen.semi}	121	{NewStatement -> Type id equals new id lparen rparen.semi}
+goto(116, Expression)	{ArgumentList -> Expression.; ArgumentList -> Expression.comma ArgumentList; Expression -> Expression.plus Term; Expression -> Expression.minus Term; Expression -> Expression.lessthan Term; Expression -> Expression.greaterthan Term}	122	{ArgumentList -> Expression.; ArgumentList -> Expression.comma ArgumentList; Expression -> Expression.plus Term; Expression -> Expression.minus Term; Expression -> Expression.lessthan Term; Expression -> Expression.greaterthan Term}
+goto(116, Term)	{Expression -> Term.; Term -> Term.star Factor; Term -> Term.slash Factor}	30	 
+goto(116, Factor)	{Term -> Factor.}	31	 
+goto(116, id)	{Factor -> id.; Factor -> id.dot id}	32	 
+goto(116, intlit)	{Factor -> intlit.}	33	 
+goto(116, lparen)	{Factor -> lparen.Expression rparen}	34	 
+goto(117, rbrace)	{IfStatement -> if lparen Expression rparen lbrace StatementList rbrace.; IfStatement -> if lparen Expression rparen lbrace StatementList rbrace.else lbrace StatementList rbrace}	123	{IfStatement -> if lparen Expression rparen lbrace StatementList rbrace.; IfStatement -> if lparen Expression rparen lbrace StatementList rbrace.else lbrace StatementList rbrace}
+goto(118, rbrace)	{WhileStatement -> while lparen Expression rparen lbrace StatementList rbrace.}	124	{WhileStatement -> while lparen Expression rparen lbrace StatementList rbrace.}
+goto(119, rparen)	{ForStatement -> for lparen ForInitialiser Expression semi Expression rparen.lbrace StatementList rbrace}	125	{ForStatement -> for lparen ForInitialiser Expression semi Expression rparen.lbrace StatementList rbrace}
+goto(119, plus)	{Expression -> Expression plus.Term}	40	 
+goto(119, minus)	{Expression -> Expression minus.Term}	41	 
+goto(119, lessthan)	{Expression -> Expression lessthan.Term}	42	 
+goto(119, greaterthan)	{Expression -> Expression greaterthan.Term}	43	 
+goto(120, rparen)	{NewStatement -> Type id equals new id lparen ArgumentList rparen.semi}	126	{NewStatement -> Type id equals new id lparen ArgumentList rparen.semi}
+goto(121, semi)	{NewStatement -> Type id equals new id lparen rparen semi.}	127	{NewStatement -> Type id equals new id lparen rparen semi.}
+goto(122, comma)	{ArgumentList -> Expression comma.ArgumentList}	128	{ArgumentList -> Expression comma.ArgumentList; ArgumentList -> .Expression; ArgumentList -> .Expression comma ArgumentList; Expression -> .Expression plus Term; Expression -> .Expression minus Term; Expression -> .Expression lessthan Term; Expression -> .Expression greaterthan Term; Expression -> .Term; Term -> .Term star Factor; Term -> .Term slash Factor; Term -> .Factor; Factor -> .id; Factor -> .intlit; Factor -> .lparen Expression rparen; Factor -> .id dot id}
+goto(122, plus)	{Expression -> Expression plus.Term}	40	 
+goto(122, minus)	{Expression -> Expression minus.Term}	41	 
+goto(122, lessthan)	{Expression -> Expression lessthan.Term}	42	 
+goto(122, greaterthan)	{Expression -> Expression greaterthan.Term}	43	 
+goto(123, else)	{IfStatement -> if lparen Expression rparen lbrace StatementList rbrace else.lbrace StatementList rbrace}	129	{IfStatement -> if lparen Expression rparen lbrace StatementList rbrace else.lbrace StatementList rbrace}
+goto(125, lbrace)	{ForStatement -> for lparen ForInitialiser Expression semi Expression rparen lbrace.StatementList rbrace}	130	{ForStatement -> for lparen ForInitialiser Expression semi Expression rparen lbrace.StatementList rbrace; StatementList -> .Statement; StatementList -> .Statement StatementList; Statement -> .VariableDeclaration; Statement -> .AssignmentStatement; Statement -> .IfStatement; Statement -> .WhileStatement; Statement -> .ForStatement; Statement -> .ReturnStatement; Statement -> .NewStatement; Statement -> .DeleteStatement; Statement -> .ExpressionStatement; VariableDeclaration -> .Type id semi; VariableDeclaration -> .Type id equals Expression semi; AssignmentStatement -> .id equals Expression semi; IfStatement -> .if lparen Expression rparen lbrace StatementList rbrace; IfStatement -> .if lparen Expression rparen lbrace StatementList rbrace else lbrace StatementList rbrace; WhileStatement -> .while lparen Expression rparen lbrace StatementList rbrace; ForStatement -> .for lparen ForInitialiser Expression semi Expression rparen lbrace StatementList rbrace; ReturnStatement -> .return Expression semi; ReturnStatement -> .return semi; NewStatement -> .Type id equals new id lparen ArgumentList rparen semi; NewStatement -> .Type id equals new id lparen rparen semi; DeleteStatement -> .delete id semi; ExpressionStatement -> .Expression semi; Type -> .int; Type -> .char; Expression -> .Expression plus Term; Expression -> .Expression minus Term; Expression -> .Expression lessthan Term; Expression -> .Expression greaterthan Term; Expression -> .Term; Term -> .Term star Factor; Term -> .Term slash Factor; Term -> .Factor; Factor -> .id; Factor -> .intlit; Factor -> .lparen Expression rparen; Factor -> .id dot id}
+goto(126, semi)	{NewStatement -> Type id equals new id lparen ArgumentList rparen semi.}	131	{NewStatement -> Type id equals new id lparen ArgumentList rparen semi.}
+goto(128, ArgumentList)	{ArgumentList -> Expression comma ArgumentList.}	132	{ArgumentList -> Expression comma ArgumentList.}
+goto(128, Expression)	{ArgumentList -> Expression.; ArgumentList -> Expression.comma ArgumentList; Expression -> Expression.plus Term; Expression -> Expression.minus Term; Expression -> Expression.lessthan Term; Expression -> Expression.greaterthan Term}	122	 
+goto(128, Term)	{Expression -> Term.; Term -> Term.star Factor; Term -> Term.slash Factor}	30	 
+goto(128, Factor)	{Term -> Factor.}	31	 
+goto(128, id)	{Factor -> id.; Factor -> id.dot id}	32	 
+goto(128, intlit)	{Factor -> intlit.}	33	 
+goto(128, lparen)	{Factor -> lparen.Expression rparen}	34	 
+goto(129, lbrace)	{IfStatement -> if lparen Expression rparen lbrace StatementList rbrace else lbrace.StatementList rbrace}	133	{IfStatement -> if lparen Expression rparen lbrace StatementList rbrace else lbrace.StatementList rbrace; StatementList -> .Statement; StatementList -> .Statement StatementList; Statement -> .VariableDeclaration; Statement -> .AssignmentStatement; Statement -> .IfStatement; Statement -> .WhileStatement; Statement -> .ForStatement; Statement -> .ReturnStatement; Statement -> .NewStatement; Statement -> .DeleteStatement; Statement -> .ExpressionStatement; VariableDeclaration -> .Type id semi; VariableDeclaration -> .Type id equals Expression semi; AssignmentStatement -> .id equals Expression semi; IfStatement -> .if lparen Expression rparen lbrace StatementList rbrace; IfStatement -> .if lparen Expression rparen lbrace StatementList rbrace else lbrace StatementList rbrace; WhileStatement -> .while lparen Expression rparen lbrace StatementList rbrace; ForStatement -> .for lparen ForInitialiser Expression semi Expression rparen lbrace StatementList rbrace; ReturnStatement -> .return Expression semi; ReturnStatement -> .return semi; NewStatement -> .Type id equals new id lparen ArgumentList rparen semi; NewStatement -> .Type id equals new id lparen rparen semi; DeleteStatement -> .delete id semi; ExpressionStatement -> .Expression semi; Type -> .int; Type -> .char; Expression -> .Expression plus Term; Expression -> .Expression minus Term; Expression -> .Expression lessthan Term; Expression -> .Expression greaterthan Term; Expression -> .Term; Term -> .Term star Factor; Term -> .Term slash Factor; Term -> .Factor; Factor -> .id; Factor -> .intlit; Factor -> .lparen Expression rparen; Factor -> .id dot id}
+goto(130, StatementList)	{ForStatement -> for lparen ForInitialiser Expression semi Expression rparen lbrace StatementList.rbrace}	134	{ForStatement -> for lparen ForInitialiser Expression semi Expression rparen lbrace StatementList.rbrace}
+goto(130, Statement)	{StatementList -> Statement.; StatementList -> Statement.StatementList}	62	 
+goto(130, VariableDeclaration)	{Statement -> VariableDeclaration.}	63	 
+goto(130, AssignmentStatement)	{Statement -> AssignmentStatement.}	64	 
+goto(130, IfStatement)	{Statement -> IfStatement.}	65	 
+goto(130, WhileStatement)	{Statement -> WhileStatement.}	66	 
+goto(130, ForStatement)	{Statement -> ForStatement.}	67	 
+goto(130, ReturnStatement)	{Statement -> ReturnStatement.}	68	 
+goto(130, NewStatement)	{Statement -> NewStatement.}	69	 
+goto(130, DeleteStatement)	{Statement -> DeleteStatement.}	70	 
+goto(130, ExpressionStatement)	{Statement -> ExpressionStatement.}	71	 
+goto(130, Type)	{VariableDeclaration -> Type.id semi; VariableDeclaration -> Type.id equals Expression semi; NewStatement -> Type.id equals new id lparen ArgumentList rparen semi; NewStatement -> Type.id equals new id lparen rparen semi}	72	 
+goto(130, id)	{AssignmentStatement -> id.equals Expression semi; Factor -> id.; Factor -> id.dot id}	73	 
+goto(130, if)	{IfStatement -> if.lparen Expression rparen lbrace StatementList rbrace; IfStatement -> if.lparen Expression rparen lbrace StatementList rbrace else lbrace StatementList rbrace}	74	 
+goto(130, while)	{WhileStatement -> while.lparen Expression rparen lbrace StatementList rbrace}	75	 
+goto(130, for)	{ForStatement -> for.lparen ForInitialiser Expression semi Expression rparen lbrace StatementList rbrace}	76	 
+goto(130, return)	{ReturnStatement -> return.Expression semi; ReturnStatement -> return.semi}	77	 
+goto(130, delete)	{DeleteStatement -> delete.id semi}	78	 
+goto(130, Expression)	{ExpressionStatement -> Expression.semi; Expression -> Expression.plus Term; Expression -> Expression.minus Term; Expression -> Expression.lessthan Term; Expression -> Expression.greaterthan Term}	79	 
+goto(130, int)	{Type -> int.}	22	 
+goto(130, char)	{Type -> char.}	23	 
+goto(130, Term)	{Expression -> Term.; Term -> Term.star Factor; Term -> Term.slash Factor}	30	 
+goto(130, Factor)	{Term -> Factor.}	31	 
+goto(130, intlit)	{Factor -> intlit.}	33	 
+goto(130, lparen)	{Factor -> lparen.Expression rparen}	34	 
+goto(133, StatementList)	{IfStatement -> if lparen Expression rparen lbrace StatementList rbrace else lbrace StatementList.rbrace}	135	{IfStatement -> if lparen Expression rparen lbrace StatementList rbrace else lbrace StatementList.rbrace}
+goto(133, Statement)	{StatementList -> Statement.; StatementList -> Statement.StatementList}	62	 
+goto(133, VariableDeclaration)	{Statement -> VariableDeclaration.}	63	 
+goto(133, AssignmentStatement)	{Statement -> AssignmentStatement.}	64	 
+goto(133, IfStatement)	{Statement -> IfStatement.}	65	 
+goto(133, WhileStatement)	{Statement -> WhileStatement.}	66	 
+goto(133, ForStatement)	{Statement -> ForStatement.}	67	 
+goto(133, ReturnStatement)	{Statement -> ReturnStatement.}	68	 
+goto(133, NewStatement)	{Statement -> NewStatement.}	69	 
+goto(133, DeleteStatement)	{Statement -> DeleteStatement.}	70	 
+goto(133, ExpressionStatement)	{Statement -> ExpressionStatement.}	71	 
+goto(133, Type)	{VariableDeclaration -> Type.id semi; VariableDeclaration -> Type.id equals Expression semi; NewStatement -> Type.id equals new id lparen ArgumentList rparen semi; NewStatement -> Type.id equals new id lparen rparen semi}	72	 
+goto(133, id)	{AssignmentStatement -> id.equals Expression semi; Factor -> id.; Factor -> id.dot id}	73	 
+goto(133, if)	{IfStatement -> if.lparen Expression rparen lbrace StatementList rbrace; IfStatement -> if.lparen Expression rparen lbrace StatementList rbrace else lbrace StatementList rbrace}	74	 
+goto(133, while)	{WhileStatement -> while.lparen Expression rparen lbrace StatementList rbrace}	75	 
+goto(133, for)	{ForStatement -> for.lparen ForInitialiser Expression semi Expression rparen lbrace StatementList rbrace}	76	 
+goto(133, return)	{ReturnStatement -> return.Expression semi; ReturnStatement -> return.semi}	77	 
+goto(133, delete)	{DeleteStatement -> delete.id semi}	78	 
+goto(133, Expression)	{ExpressionStatement -> Expression.semi; Expression -> Expression.plus Term; Expression -> Expression.minus Term; Expression -> Expression.lessthan Term; Expression -> Expression.greaterthan Term}	79	 
+goto(133, int)	{Type -> int.}	22	 
+goto(133, char)	{Type -> char.}	23	 
+goto(133, Term)	{Expression -> Term.; Term -> Term.star Factor; Term -> Term.slash Factor}	30	 
+goto(133, Factor)	{Term -> Factor.}	31	 
+goto(133, intlit)	{Factor -> intlit.}	33	 
+goto(133, lparen)	{Factor -> lparen.Expression rparen}	34	 
+goto(134, rbrace)	{ForStatement -> for lparen ForInitialiser Expression semi Expression rparen lbrace StatementList rbrace.}	136	{ForStatement -> for lparen ForInitialiser Expression semi Expression rparen lbrace StatementList rbrace.}
+goto(135, rbrace)	{IfStatement -> if lparen Expression rparen lbrace StatementList rbrace else lbrace StatementList rbrace.}	137	{IfStatement -> if lparen Expression rparen lbrace StatementList rbrace else lbrace StatementList rbrace.}
+
+
+
+
+LR table
+State	ACTION	GOTO
+class	id	lbrace	rbrace	semi	colon	public	private	protected	equals	int	char	lparen	rparen	comma	if	else	while	for	return	new	delete	plus	minus	lessthan	greaterthan	star	slash	intlit	dot	$	Program	ClassDeclarationList	ClassDeclaration	AccessSpecifierSectionList	AccessSpecifierSection	AccessSpecifier	MemberList	MemberDeclaration	VariableDeclaration	Type	FunctionDeclaration	ParameterList	Parameter	StatementList	Statement	AssignmentStatement	IfStatement	WhileStatement	ForStatement	ForInitialiser	ReturnStatement	ExpressionStatement	NewStatement	DeleteStatement	Expression	Term	Factor	ArgumentList
+0	s3	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	1	2	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+1	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	acc	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+2	s3	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	r1	 	4	2	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+3	 	s5	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+4	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	r2	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+5	 	 	s6	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+6	 	 	 	 	 	 	s10	s11	s12	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	7	8	9	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+7	 	 	 	s13	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+8	 	 	 	r4	 	 	s10	s11	s12	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	14	8	9	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+9	 	 	 	 	 	s15	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+10	 	 	 	 	 	r7	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+11	 	 	 	 	 	r8	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+12	 	 	 	 	 	r9	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+13	 	 	 	 	s16	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+14	 	 	 	r5	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+15	 	 	 	 	 	 	 	 	 	 	s22	s23	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	17	18	19	21	20	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+16	r3	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	r3	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+17	 	 	 	r6	 	 	r6	r6	r6	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+18	 	 	 	r10	 	 	r10	r10	r10	 	s22	s23	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	24	18	19	21	20	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+19	 	 	 	r12	 	 	r12	r12	r12	 	r12	r12	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+20	 	 	 	r13	 	 	r13	r13	r13	 	r13	r13	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+21	 	s25	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+22	 	r16	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+23	 	r17	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+24	 	 	 	r11	 	 	r11	r11	r11	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+25	 	 	 	 	s26	 	 	 	 	s27	 	 	s28	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+26	 	r14	 	r14	 	 	r14	r14	r14	 	r14	r14	r14	 	 	r14	 	r14	r14	r14	 	r14	 	 	 	 	 	 	r14	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+27	 	s32	 	 	 	 	 	 	 	 	 	 	s34	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	s33	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	29	30	31	 
+28	 	 	 	 	 	 	 	 	 	 	s22	s23	 	s36	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	38	 	35	37	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+29	 	 	 	 	s39	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	s40	s41	s42	s43	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+30	 	 	 	 	r52	 	 	 	 	 	 	 	 	r52	r52	 	 	 	 	 	 	 	r52	r52	r52	r52	s44	s45	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+31	 	 	 	 	r55	 	 	 	 	 	 	 	 	r55	r55	 	 	 	 	 	 	 	r55	r55	r55	r55	r55	r55	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+32	 	 	 	 	r56	 	 	 	 	 	 	 	 	r56	r56	 	 	 	 	 	 	 	r56	r56	r56	r56	r56	r56	 	s46	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+33	 	 	 	 	r57	 	 	 	 	 	 	 	 	r57	r57	 	 	 	 	 	 	 	r57	r57	r57	r57	r57	r57	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+34	 	s32	 	 	 	 	 	 	 	 	 	 	s34	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	s33	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	47	30	31	 
+35	 	 	 	 	 	 	 	 	 	 	 	 	 	s48	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+36	 	 	s49	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+37	 	 	 	 	 	 	 	 	 	 	 	 	 	r20	s50	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+38	 	s51	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+39	 	r15	 	r15	 	 	r15	r15	r15	 	r15	r15	r15	 	 	r15	 	r15	r15	r15	 	r15	 	 	 	 	 	 	r15	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+40	 	s32	 	 	 	 	 	 	 	 	 	 	s34	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	s33	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	52	31	 
+41	 	s32	 	 	 	 	 	 	 	 	 	 	s34	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	s33	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	53	31	 
+42	 	s32	 	 	 	 	 	 	 	 	 	 	s34	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	s33	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	54	31	 
+43	 	s32	 	 	 	 	 	 	 	 	 	 	s34	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	s33	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	55	31	 
+44	 	s32	 	 	 	 	 	 	 	 	 	 	s34	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	s33	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	56	 
+45	 	s32	 	 	 	 	 	 	 	 	 	 	s34	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	s33	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	57	 
+46	 	s58	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+47	 	 	 	 	 	 	 	 	 	 	 	 	 	s59	 	 	 	 	 	 	 	 	s40	s41	s42	s43	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+48	 	 	s60	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+49	 	s73	 	 	 	 	 	 	 	 	s22	s23	s34	 	 	s74	 	s75	s76	s77	 	s78	 	 	 	 	 	 	s33	 	 	 	 	 	 	 	 	 	 	63	72	 	 	 	61	62	64	65	66	67	 	68	71	69	70	79	30	31	 
+50	 	 	 	 	 	 	 	 	 	 	s22	s23	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	38	 	80	37	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+51	 	 	 	 	 	 	 	 	 	 	 	 	 	r22	r22	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+52	 	 	 	 	r48	 	 	 	 	 	 	 	 	r48	r48	 	 	 	 	 	 	 	r48	r48	r48	r48	s44	s45	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+53	 	 	 	 	r49	 	 	 	 	 	 	 	 	r49	r49	 	 	 	 	 	 	 	r49	r49	r49	r49	s44	s45	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+54	 	 	 	 	r50	 	 	 	 	 	 	 	 	r50	r50	 	 	 	 	 	 	 	r50	r50	r50	r50	s44	s45	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+55	 	 	 	 	r51	 	 	 	 	 	 	 	 	r51	r51	 	 	 	 	 	 	 	r51	r51	r51	r51	s44	s45	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+56	 	 	 	 	r53	 	 	 	 	 	 	 	 	r53	r53	 	 	 	 	 	 	 	r53	r53	r53	r53	r53	r53	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+57	 	 	 	 	r54	 	 	 	 	 	 	 	 	r54	r54	 	 	 	 	 	 	 	r54	r54	r54	r54	r54	r54	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+58	 	 	 	 	r59	 	 	 	 	 	 	 	 	r59	r59	 	 	 	 	 	 	 	r59	r59	r59	r59	r59	r59	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+59	 	 	 	 	r58	 	 	 	 	 	 	 	 	r58	r58	 	 	 	 	 	 	 	r58	r58	r58	r58	r58	r58	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+60	 	s73	 	 	 	 	 	 	 	 	s22	s23	s34	 	 	s74	 	s75	s76	s77	 	s78	 	 	 	 	 	 	s33	 	 	 	 	 	 	 	 	 	 	63	72	 	 	 	81	62	64	65	66	67	 	68	71	69	70	79	30	31	 
+61	 	 	 	s82	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+62	 	s73	 	r23	 	 	 	 	 	 	s22	s23	s34	 	 	s74	 	s75	s76	s77	 	s78	 	 	 	 	 	 	s33	 	 	 	 	 	 	 	 	 	 	63	72	 	 	 	83	62	64	65	66	67	 	68	71	69	70	79	30	31	 
+63	 	r25	 	r25	 	 	 	 	 	 	r25	r25	r25	 	 	r25	 	r25	r25	r25	 	r25	 	 	 	 	 	 	r25	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+64	 	r26	 	r26	 	 	 	 	 	 	r26	r26	r26	 	 	r26	 	r26	r26	r26	 	r26	 	 	 	 	 	 	r26	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+65	 	r27	 	r27	 	 	 	 	 	 	r27	r27	r27	 	 	r27	 	r27	r27	r27	 	r27	 	 	 	 	 	 	r27	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+66	 	r28	 	r28	 	 	 	 	 	 	r28	r28	r28	 	 	r28	 	r28	r28	r28	 	r28	 	 	 	 	 	 	r28	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+67	 	r29	 	r29	 	 	 	 	 	 	r29	r29	r29	 	 	r29	 	r29	r29	r29	 	r29	 	 	 	 	 	 	r29	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+68	 	r30	 	r30	 	 	 	 	 	 	r30	r30	r30	 	 	r30	 	r30	r30	r30	 	r30	 	 	 	 	 	 	r30	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+69	 	r31	 	r31	 	 	 	 	 	 	r31	r31	r31	 	 	r31	 	r31	r31	r31	 	r31	 	 	 	 	 	 	r31	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+70	 	r32	 	r32	 	 	 	 	 	 	r32	r32	r32	 	 	r32	 	r32	r32	r32	 	r32	 	 	 	 	 	 	r32	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+71	 	r33	 	r33	 	 	 	 	 	 	r33	r33	r33	 	 	r33	 	r33	r33	r33	 	r33	 	 	 	 	 	 	r33	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+72	 	s84	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+73	 	 	 	 	r56	 	 	 	 	s85	 	 	 	r56	r56	 	 	 	 	 	 	 	r56	r56	r56	r56	r56	r56	 	s46	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+74	 	 	 	 	 	 	 	 	 	 	 	 	s86	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+75	 	 	 	 	 	 	 	 	 	 	 	 	s87	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+76	 	 	 	 	 	 	 	 	 	 	 	 	s88	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+77	 	s32	 	 	s90	 	 	 	 	 	 	 	s34	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	s33	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	89	30	31	 
+78	 	s91	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+79	 	 	 	 	s92	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	s40	s41	s42	s43	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+80	 	 	 	 	 	 	 	 	 	 	 	 	 	r21	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+81	 	 	 	s93	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+82	 	 	 	r19	 	 	r19	r19	r19	 	r19	r19	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+83	 	 	 	r24	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+84	 	 	 	 	s26	 	 	 	 	s94	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+85	 	s32	 	 	 	 	 	 	 	 	 	 	s34	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	s33	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	95	30	31	 
+86	 	s32	 	 	 	 	 	 	 	 	 	 	s34	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	s33	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	96	30	31	 
+87	 	s32	 	 	 	 	 	 	 	 	 	 	s34	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	s33	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	97	30	31	 
+88	 	s103	 	 	s101	 	 	 	 	 	s22	s23	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	99	102	 	 	 	 	 	100	 	 	 	98	 	 	 	 	 	 	 	 
+89	 	 	 	 	s104	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	s40	s41	s42	s43	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+90	 	r43	 	r43	 	 	 	 	 	 	r43	r43	r43	 	 	r43	 	r43	r43	r43	 	r43	 	 	 	 	 	 	r43	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+91	 	 	 	 	s105	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+92	 	r44	 	r44	 	 	 	 	 	 	r44	r44	r44	 	 	r44	 	r44	r44	r44	 	r44	 	 	 	 	 	 	r44	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+93	 	 	 	r18	 	 	r18	r18	r18	 	r18	r18	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+94	 	s32	 	 	 	 	 	 	 	 	 	 	s34	 	 	 	 	 	 	 	s106	 	 	 	 	 	 	 	s33	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	29	30	31	 
+95	 	 	 	 	s107	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	s40	s41	s42	s43	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+96	 	 	 	 	 	 	 	 	 	 	 	 	 	s108	 	 	 	 	 	 	 	 	s40	s41	s42	s43	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+97	 	 	 	 	 	 	 	 	 	 	 	 	 	s109	 	 	 	 	 	 	 	 	s40	s41	s42	s43	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+98	 	s32	 	 	 	 	 	 	 	 	 	 	s34	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	s33	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	110	30	31	 
+99	 	r39	 	 	 	 	 	 	 	 	 	 	r39	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	r39	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+100	 	r40	 	 	 	 	 	 	 	 	 	 	r40	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	r40	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+101	 	r41	 	 	 	 	 	 	 	 	 	 	r41	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	r41	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+102	 	s111	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+103	 	 	 	 	 	 	 	 	 	s85	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+104	 	r42	 	r42	 	 	 	 	 	 	r42	r42	r42	 	 	r42	 	r42	r42	r42	 	r42	 	 	 	 	 	 	r42	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+105	 	r47	 	r47	 	 	 	 	 	 	r47	r47	r47	 	 	r47	 	r47	r47	r47	 	r47	 	 	 	 	 	 	r47	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+106	 	s112	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+107	 	r34	 	r34	 	 	 	 	 	 	r34	r34	r34	 	 	r34	 	r34	r34	r34	 	r34	 	 	 	 	 	 	r34	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+108	 	 	s113	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+109	 	 	s114	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+110	 	 	 	 	s115	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	s40	s41	s42	s43	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+111	 	 	 	 	s26	 	 	 	 	s27	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+112	 	 	 	 	 	 	 	 	 	 	 	 	s116	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+113	 	s73	 	 	 	 	 	 	 	 	s22	s23	s34	 	 	s74	 	s75	s76	s77	 	s78	 	 	 	 	 	 	s33	 	 	 	 	 	 	 	 	 	 	63	72	 	 	 	117	62	64	65	66	67	 	68	71	69	70	79	30	31	 
+114	 	s73	 	 	 	 	 	 	 	 	s22	s23	s34	 	 	s74	 	s75	s76	s77	 	s78	 	 	 	 	 	 	s33	 	 	 	 	 	 	 	 	 	 	63	72	 	 	 	118	62	64	65	66	67	 	68	71	69	70	79	30	31	 
+115	 	s32	 	 	 	 	 	 	 	 	 	 	s34	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	s33	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	119	30	31	 
+116	 	s32	 	 	 	 	 	 	 	 	 	 	s34	s121	 	 	 	 	 	 	 	 	 	 	 	 	 	 	s33	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	122	30	31	120
+117	 	 	 	s123	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+118	 	 	 	s124	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+119	 	 	 	 	 	 	 	 	 	 	 	 	 	s125	 	 	 	 	 	 	 	 	s40	s41	s42	s43	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+120	 	 	 	 	 	 	 	 	 	 	 	 	 	s126	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+121	 	 	 	 	s127	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+122	 	 	 	 	 	 	 	 	 	 	 	 	 	r60	s128	 	 	 	 	 	 	 	s40	s41	s42	s43	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+123	 	r35	 	r35	 	 	 	 	 	 	r35	r35	r35	 	 	r35	s129	r35	r35	r35	 	r35	 	 	 	 	 	 	r35	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+124	 	r37	 	r37	 	 	 	 	 	 	r37	r37	r37	 	 	r37	 	r37	r37	r37	 	r37	 	 	 	 	 	 	r37	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+125	 	 	s130	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+126	 	 	 	 	s131	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+127	 	r46	 	r46	 	 	 	 	 	 	r46	r46	r46	 	 	r46	 	r46	r46	r46	 	r46	 	 	 	 	 	 	r46	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+128	 	s32	 	 	 	 	 	 	 	 	 	 	s34	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	s33	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	122	30	31	132
+129	 	 	s133	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+130	 	s73	 	 	 	 	 	 	 	 	s22	s23	s34	 	 	s74	 	s75	s76	s77	 	s78	 	 	 	 	 	 	s33	 	 	 	 	 	 	 	 	 	 	63	72	 	 	 	134	62	64	65	66	67	 	68	71	69	70	79	30	31	 
+131	 	r45	 	r45	 	 	 	 	 	 	r45	r45	r45	 	 	r45	 	r45	r45	r45	 	r45	 	 	 	 	 	 	r45	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+132	 	 	 	 	 	 	 	 	 	 	 	 	 	r61	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+133	 	s73	 	 	 	 	 	 	 	 	s22	s23	s34	 	 	s74	 	s75	s76	s77	 	s78	 	 	 	 	 	 	s33	 	 	 	 	 	 	 	 	 	 	63	72	 	 	 	135	62	64	65	66	67	 	68	71	69	70	79	30	31	 
+134	 	 	 	s136	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+135	 	 	 	s137	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+136	 	r38	 	r38	 	 	 	 	 	 	r38	r38	r38	 	 	r38	 	r38	r38	r38	 	r38	 	 	 	 	 	 	r38	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+137	 	r36	 	r36	 	 	 	 	 	 	r36	r36	r36	 	 	r36	 	r36	r36	r36	 	r36	 	 	 	 	 	 	r36	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+
+
+Input (tokens):
+
+Maximum number of steps:
+
+
+
+Trace	Tree
+Step	Stack	Input	Action
+1	0	id + id * id $	 	 

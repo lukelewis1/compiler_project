@@ -60,7 +60,8 @@ typedef enum {
 
 // Keyword table
 static const char *keywords[] = {
-    "int", "char", "if", "else", "while", "for", "do", "return", NULL
+    "int", "char", "if", "else", "while", "for", "do", "return",
+    "class", "public", "private", "protected", "new", "delete", NULL
 };
 
 // Global variables for tracking token statistics
@@ -91,7 +92,7 @@ static bool is_keyword(char* lexeme) {
 static bool is_delimiter(char c) {
     return (c == ',' || c == ';' || c == '('
             || c == ')' || c == '[' || c == ']'
-            || c == '{' || c == '}');
+            || c == '{' || c == '}' || c == ':');
 }
 
 /**

@@ -1,0 +1,57 @@
+FIRST(Program)                    = { class }
+
+FIRST(ClassDeclarationList)       = { class }
+
+FIRST(ClassDeclaration)           = { class }
+
+FIRST(AccessSpecifierSectionList) = { public, private, protected }
+
+FIRST(AccessSpecifierSection)     = { public, private, protected }
+
+FIRST(AccessSpecifier)            = { public, private, protected }
+
+FIRST(MemberList)                 = { int, char }
+
+FIRST(MemberDeclaration)          = { int, char }
+
+FIRST(VariableDeclaration)        = { int, char }
+
+FIRST(FunctionDeclaration)        = { int, char }
+
+FIRST(Type)                       = { int, char }
+
+FIRST(ParameterList)              = { int, char }
+
+FIRST(Parameter)                  = { int, char }
+
+FIRST(StatementList)              = { int, char, if, while, for,
+                                      return, new, delete, Identifier }
+
+FIRST(Statement)                  = { int, char, if, while, for,
+                                      return, new, delete, Identifier }
+
+FIRST(AssignmentStatement)        = { Identifier }
+
+FIRST(IfStatement)                = { if }
+
+FIRST(WhileStatement)             = { while }
+
+FIRST(ForStatement)               = { for }
+
+FIRST(ForInitialiser)             = { int, char, Identifier, ; }
+
+FIRST(ReturnStatement)            = { return }
+
+FIRST(ExpressionStatement)        = { Identifier, IntegerLiteral, ( }
+
+FIRST(NewStatement)               = { int, char }
+
+FIRST(DeleteStatement)            = { delete }
+
+FIRST(Expression)                 = { Identifier, IntegerLiteral, ( }
+
+FIRST(Term)                       = { Identifier, IntegerLiteral, ( }
+
+FIRST(Factor)                     = { Identifier, IntegerLiteral, ( }
+
+FIRST(ArgumentList)               = { Identifier, IntegerLiteral, ( }

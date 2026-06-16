@@ -1,0 +1,64 @@
+FOLLOW(Program)                    = { $ }
+
+FOLLOW(ClassDeclarationList)       = { $ }
+
+FOLLOW(ClassDeclaration)           = { class, $ }
+
+FOLLOW(AccessSpecifierSectionList) = { } }
+
+FOLLOW(AccessSpecifierSection)     = { public, private, protected, } }
+
+FOLLOW(AccessSpecifier)            = { : }
+
+FOLLOW(MemberList)                 = { public, private, protected, } }
+
+FOLLOW(MemberDeclaration)          = { int, char, public, private, protected, } }
+
+FOLLOW(VariableDeclaration)        = { int, char, if, while, for, return,
+                                       new, delete, Identifier,
+                                       public, private, protected, } }
+
+FOLLOW(FunctionDeclaration)        = { int, char, public, private, protected, } }
+
+FOLLOW(Type)                       = { Identifier }
+
+FOLLOW(ParameterList)              = { ) }
+
+FOLLOW(Parameter)                  = { , ) }
+
+FOLLOW(StatementList)              = { } }
+
+FOLLOW(Statement)                  = { int, char, if, while, for, return,
+                                       new, delete, Identifier, } }
+
+FOLLOW(AssignmentStatement)        = { int, char, if, while, for, return,
+                                       new, delete, Identifier, } }
+
+FOLLOW(IfStatement)                = { int, char, if, while, for, return,
+                                       new, delete, Identifier, } }
+
+FOLLOW(WhileStatement)             = { int, char, if, while, for, return,
+                                       new, delete, Identifier, } }
+
+FOLLOW(ForStatement)               = { int, char, if, while, for, return,
+                                       new, delete, Identifier, } }
+
+FOLLOW(ReturnStatement)            = { int, char, if, while, for, return,
+                                       new, delete, Identifier, } }
+
+FOLLOW(ExpressionStatement)        = { int, char, if, while, for, return,
+                                       new, delete, Identifier, } }
+
+FOLLOW(NewStatement)               = { int, char, if, while, for, return,
+                                       new, delete, Identifier, } }
+
+FOLLOW(DeleteStatement)            = { int, char, if, while, for, return,
+                                       new, delete, Identifier, } }
+
+FOLLOW(Expression)                 = { ;, ), ,, +, -, ==, !=, <, > }
+
+FOLLOW(Term)                       = { +, -, ==, !=, <, >, ;, ), , }
+
+FOLLOW(Factor)                     = { *, /, +, -, ==, !=, <, >, ;, ), , }
+
+FOLLOW(ArgumentList)               = { ) }
